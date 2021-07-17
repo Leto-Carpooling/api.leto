@@ -8,6 +8,7 @@ bin-release/
 .settings/
 vendor/
 .env
+composer.lock
 
 # Executables
 *.swf
