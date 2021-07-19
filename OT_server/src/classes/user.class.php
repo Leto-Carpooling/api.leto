@@ -164,11 +164,15 @@ use Dotenv\Loader\Resolver;
 
         public function logout(){
             if(!isset($this->sessionId)){
-                Return Response::$NLIE;
+                return Response::$NLIE;
             }            
 
+            if(!isset($this->id)){
+                return Response::$NIE;
+            }
+            
             $dbManager = new DbManager();
-            if($dbManager->delete("session", "session_id = ?", [$this->sessionId])){
+            if($dbManager->delete("session", "session_id = ? and userId = ?", [$this->sessionId, $this->id])){
                 return Response::$OK;
             }
 
