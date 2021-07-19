@@ -51,27 +51,20 @@
                         return true;
                       }
                       else{
-                        return "PNE";//Password Number Error
+                        return Response::makeResponse("PNE", "Password must have at least one digit");//Password Number Error
                       }
                    }else{
-                     return "PLLE";//Password Lowercase Letter Error
+                     return Response::makeResponse("PLLE", "Password must have at least one lowercase letter");//Password Lowercase Letter Error
                    }
                 }
                 else{
-                  return "PULE";//Password Uppercase Letter Errors
+                  return Response::makeResponse("PULE", "Password must have at least one uppercase letter");//Password Uppercase Letter Errors
                 }
              }
              else{
-               return "PLSE";//Password Length Short Error
+               return Response::makeResponse("PLSE", "Password must be longer than 9 characters");//Password Length Short Error
              }
            }
-
-            /**
-             * This function checks HTTP requests
-             */
-            public static function verifyHttpRequest($request){
-                $request = $_SERVER['REQUEST'];
-            }
     
             /**
              * This function allows the uploading of images.

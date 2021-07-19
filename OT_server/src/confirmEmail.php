@@ -2,7 +2,7 @@
     require("master.inc.php");
 
     if(!$isLoggedIn){
-       exit(Response::$NLIE);
+       exit(Response::NLIE());
     }
     
     $code = isset($_POST["code"])?$_POST["code"]:null;
@@ -11,6 +11,6 @@
     if($code !== null){
         exit($user->confirmEmail($code));
     }
-    exit(Response::$UEO);
+    exit(Response::UEO());
 
 ?>

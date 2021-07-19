@@ -1,18 +1,24 @@
 <?php
-require(__DIR__."../vendor/autoload.php");
+require(__DIR__."/../vendor/autoload.php");
 /** 
  * Include classes as needed and interfaces as needed
  */
- spl_autoload_register(function($name){
-    $classname = strtolower($name);
-    include(__DIR__. "/classes/$classname.class.php");
- });
 
- spl_autoload_register(function($name){
-    $interfacename = strtolower($name);
-    $interfacename = preg_replace("/^.*interface$/", "", $interfacename);
-    include(__DIR__ . "/interfaces/$interfacename.interface.php");
- });
+spl_autoload_register(function($name){
+   $classname = strtolower($name);
+   $interfacename = strtolower($name);
+   $interfacename = preg_replace("/^.*interface$/", "", $interfacename);
+   $filename = __DIR__ . "/interfaces/$interfacename.interface.php";
+   if(file_exists($filename)){
+      include($filename);
+   }
+   $filename = __DIR__. "/classes/$classname.class.php";
+   if(file_exists($filename)){
+      include($filename);
+   }
+});
+
+
 
 
  $isLoggedIn = false;

@@ -18,6 +18,8 @@ $dotenv->load();
 
      public static function migrate(){
         $query = file_get_contents(Migrator::SCHEMA);
+        $query = preg_replace("/\r\n/", " ", $query);
+        echo $query;
         $dbManager = new DbManager();
         if($dbManager->makeDatabase($query)){
             echo "\nCreated the database\n";

@@ -3,7 +3,7 @@
 
 
 class DbManager implements DatabaseInterface{
-    private $dbConnection;
+    private $dbConnection = null;
     private $dbName;
     private $dbHost;
     private $rows;
@@ -29,7 +29,6 @@ class DbManager implements DatabaseInterface{
 	 * @return mixed
 	 */
 	public function connect() {
-		if($this->dbConnection != null){
 			$user = "root";//getenv('DB_USERNAME');
 			$pass = "";//getenv('DB_PASSWORD');
 			$dsn = "mysql:host=$this->dbHost;port=$this->dbPort;dbname=$this->dbName";
@@ -52,9 +51,9 @@ class DbManager implements DatabaseInterface{
 				);
 			} 
 			catch (\PDOException $e) {
+				echo $e->getMessage(). " Error occured while creating connection\n";
 				exit($e->getMessage());
 			}
-		}
 	}
 	
 	/**

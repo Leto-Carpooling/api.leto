@@ -1,7 +1,7 @@
 <?php
     require("master.inc.php");
     if($isLoggedIn){
-        exit(Response::$ALIE);
+        exit(Response::ALIE());
     }
 
     require("includes/phpmailer.inc.php");
@@ -28,7 +28,7 @@
             }
         default:
         {
-            exit(Response::$UEO);
+            exit(Response::UEO());
         }
     }
 

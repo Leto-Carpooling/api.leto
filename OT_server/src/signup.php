@@ -1,15 +1,36 @@
 <?php
     require("master.inc.php");
     if($isLoggedIn){
-        exit(Response::$ALIE);
+        exit(Response::ALIE());
     }
     require("includes/phpmailer.inc.php");
 
-    $email = isset($_POST['email'])?$_POST['email']:null;
-    $password = isset($_POST['password'])? $_POST['password']:null;
+    //e = email test and s = signup
+    $action = isset($_POST['action'])?$_POST['action']:"s";
+    var_dump($_POST);
 
+    $email = isset($_POST['email'])?$_POST['email']:null;
     $newUser = new User();
     $newUser->setEmail($email);
-    $newUser->setPassword($password);
-    exit($newUser->register());
+
+    switch($action){
+        case "e":
+            {
+                $dbManager = new DbManager();
+                if(User::doesEmailExist($email, $dbManager)){
+                    exit(Response::EEE());
+                }
+                exit(Response::OK());
+            }
+        case "s":
+            {
+                $password = isset($_POST['password'])? $_POST['password']:null;
+                $newUser->setPassword($password);
+                exit($newUser->register());
+            }
+        default:
+        {
+            exit(Response::UEO());
+        }
+    }
 ?>

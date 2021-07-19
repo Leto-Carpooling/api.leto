@@ -2,7 +2,7 @@
  require("master.inc.php");
 
  if($isLoggedIn){
-    exit(Response::$ALIE);
+    exit(Response::ALIE());
  }
 
  $email = isset($_POST['email'])?$_POST['email']:null;

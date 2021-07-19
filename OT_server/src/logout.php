@@ -2,7 +2,7 @@
  require("master.inc.php");
 
  if(!$isLoggedIn){
-    exit(Response::$NLIE);
+    exit(Response::NLIE());
  }
 
  $user = new User();

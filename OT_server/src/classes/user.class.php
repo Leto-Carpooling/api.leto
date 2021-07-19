@@ -61,11 +61,11 @@ use Dotenv\Loader\Resolver;
                  $values = [$newPassword];
                  $dbManager = new DbManager();
                  if($dbManager->update($table, "user_password = ?", $values, "id = ?", [$this->id])){
-                     return Response::$OK;
+                     return Response::OK();
                  }
-                 return Response::$SQE;
+                 return Response::SQE();
             }
-            return Response::$WPE;
+            return Response::WPE();
         }
 
         /**
@@ -82,20 +82,20 @@ use Dotenv\Loader\Resolver;
          */
         public function register(){
             if($this->email == null){
-                return Response::$NEE; //Null Email Error
+                return Response::NEE(); //Null Email Error
             }
     
             if($this->password == null){
-                return Response::$NPE; //Null Password Error
+                return Response::NPE(); //Null Password Error
             }
     
             if(!Utility::checkEmail($this->email)){
-                return Response::$UEE;
+                return Response::UEE();
             }
             $dbManager = new DbManager();
 
             if(User::doesEmailExist($this->email, $dbManager)){
-                return Response::$EEE;
+                return Response::EEE();
             }
     
             if(Utility::isPasswordStrong($this->password) !== true){
@@ -120,16 +120,16 @@ use Dotenv\Loader\Resolver;
            
             }
             catch(Exception $exception){}
-            return Response::$SQE;
+            return Response::SQE();
         }
 
         public function login(){
             if(!isset($this->email) || empty($this->email)){
-                return Response::$NEE;
+                return Response::NEE();
             }
     
             if(!isset($this->password) || empty($this->password)){
-                return Response::$NPE;
+                return Response::NPE();
             }
     
             try{
@@ -145,7 +145,7 @@ use Dotenv\Loader\Resolver;
                     $userId = $details['id'];
     
                     if(!password_verify($this->password, $hashed_password)){
-                        return Response::$WPE;
+                        return Response::WPE();
                     }
                     $this->id = $userId;
 
@@ -155,28 +155,28 @@ use Dotenv\Loader\Resolver;
                     return Response::makeResponse("OK", "$userId-$sessionToken");
                 }
 
-                return Response::$WEE;
+                return Response::WEE();
             }
     
             catch (Exception $e){}
-            return Response::$SQE;
+            return Response::SQE();
         }
 
         public function logout(){
             if(!isset($this->sessionId)){
-                return Response::$NLIE;
+                return Response::NLIE();
             }            
 
             if(!isset($this->id)){
-                return Response::$NIE;
+                return Response::NIE();
             }
             
             $dbManager = new DbManager();
             if($dbManager->delete("session", "session_id = ? and userId = ?", [$this->sessionId, $this->id])){
-                return Response::$OK;
+                return Response::OK();
             }
 
-            return Response::$SQE;
+            return Response::SQE();
         }
 
         /**
@@ -186,14 +186,14 @@ use Dotenv\Loader\Resolver;
          */
         public function forgotPassword(){
             if(empty($this->email) || $this->email == null){
-                return Response::$NEE;
+                return Response::NEE();
             }
 
             $dbManager = new DbManager();
             $userInfo = $dbManager->query("user", ["id", "firstname", "lastname"], "email = ?", [$this->email]);
 
             if(!$userInfo || count($userInfo) < 1){
-                return Response::$UNFE;
+                return Response::CPETE();
             }
 
             $this->id = $userInfo['id'];
@@ -205,7 +205,7 @@ use Dotenv\Loader\Resolver;
             
             $rowId = $dbManager->insert("reset_password", ["userId", "token"], [$this->id, $token]);
             if($rowId == -1){
-                return Response::$SQE;
+                return Response::SQE();
             }
 
             $fullName = $userInfo["firstname"]." ". $userInfo["lastname"];
@@ -220,7 +220,7 @@ use Dotenv\Loader\Resolver;
            if(sendEmail($fullName, $this->email, $sub, $msg)){
                return Response::makeResponse("OK", "We have sent the code to change your password to $this->email");
            }
-           return Response::$UEO;
+           return Response::UEO();
         }
 
         /**
@@ -236,19 +236,19 @@ use Dotenv\Loader\Resolver;
             $dbManager = new DbManager();
             $result = $dbManager->query("reset_password", ["*"], "userId = ? and token = ?", [$id, $token]);
             if(!$result){
-                return Response::$CPTNFE;
+                return Response::CPTNFE();
             }
 
             //check expiry
             $dateSent = strtotime($result['created_on']);
             if(time() - $dateSent > (3600 * 24)){
                 $dbManager->delete("reset_password", "token = ?", [$token]);
-                return Response::$CPETE;
+                return Response::CPETE();
             }
 
             //proceed to change password.
             if(empty($this->password) || $this->password == null){
-                return Response::$NPE;
+                return Response::NPE();
             }
 
             if(Utility::isPasswordStrong($this->password) !== true){
@@ -258,10 +258,10 @@ use Dotenv\Loader\Resolver;
             $this->password = password_hash($this->password, PASSWORD_DEFAULT);
             if($dbManager->update("user", "user_password = ?", [$this->password], "id = ?", [$result["userId"]])){
                 $dbManager->delete("reset_password", "token = ?", [$token]);
-                return Response::$OK;
+                return Response::OK();
             }
 
-            return Response::$SQE;
+            return Response::SQE();
         }
 
         /**
@@ -319,13 +319,13 @@ use Dotenv\Loader\Resolver;
 
         public function confirmEmail($code){
             if(empty($this->id) || $this->id == null){
-                return Response::$NIE;
+                return Response::NIE();
             }
 
             $dbManager = new DbManager();
             $dbManager->update("user", "email_verified = ?", [1], "id = ? and ev_code = ?", [$this->id, $code]);
             if($dbManager->getAffRowsCount() > 0){
-                return Response::$OK;
+                return Response::OK();
             }
 
             return Response::makeResponse("WCE", "You entered an invalid code");
