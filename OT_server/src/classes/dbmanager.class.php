@@ -9,7 +9,7 @@ class DbManager implements DatabaseInterface{
     private $rows;
     private $statements = [];
 	private $withOptions = false;
-	private $fetchAll = true;
+	private $fetchAll = false;
 
     /**
      * @param bool $options - to pass to the PDO connection

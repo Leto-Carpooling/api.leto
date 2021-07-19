@@ -23,7 +23,6 @@
         public function loadUser($user_id){
             $this->id = $user_id;
             $dbManager = new DbManager();
-            $dbManager->setFetchAll(false);
             $table = "user";
             $values = [$this->id];
             $userInfo = $dbManager->query($table, ["*"], "id = ?", $values);
@@ -121,11 +120,11 @@
 
         public function login(){
             if(!isset($this->email) || empty($this->email)){
-                return "EEE";//email empty error
+                return "NLE";//email empty error
             }
     
             if(!isset($this->password) || empty($this->password)){
-                return "EPE";//empty password error
+                return "NPE";//empty password error
             }
     
             try{
@@ -134,7 +133,6 @@
                 $values = [$this->email];
                 
                 $dbManager = new DbManager();
-                $dbManager->setFetchAll(false);
                 $details = $dbManager->query($tableName, $columns,"email = ?", $values);
                 
                 if($details){
@@ -159,6 +157,88 @@
 
         public function logout(){
             
+        }
+
+        /**
+         * A user forgot their password and wants a link to reset it.
+         * The user email must be set.
+         */
+        public function forgotPassword(){
+            if(empty($this->email) || $this->email == null){
+                return "NLE";
+            }
+
+            $dbManager = new DbManager();
+            $userInfo = $dbManager->query("user", ["id", "firstname", "lastname"], "email = ?", [$this->email]);
+
+            if(!$userInfo || count($userInfo) < 1){
+                return "UNFE"; //User Not Found Error
+            }
+
+            $this->id = $userInfo['id'];
+            $token = uniqid("PWC-", true);
+            
+            $rowId = $dbManager->insert("reset_password", ["userId", "token"], [$this->id, $token]);
+            if($rowId == -1){
+                return "SQE";
+            }
+
+            //send the link
+            $encryptedId = Utility::letoBase29Encode($this->id);
+            $encryptedToken = base64_encode($token);
+
+            $idCode = $encryptedId;
+            $tokenCode = $encryptedToken;
+
+            $fullName = $userInfo["firstname"]." ". $userInfo["lastname"];
+            if(empty($fullName))
+            {
+                $fullName = $this->email;
+            }
+
+            $sub = "Forgot Password";
+            $msg = "Enter these codes to change your password: Code 1: $idCode  Code 2: $tokenCode";
+
+           if(sendEmail($fullName, $this->email, $sub, $msg)){
+               return "OK";
+           }
+           return "UEO";
+        }
+
+        /**
+         * Changes password from the forgotten password page.
+         * @param string $idCode
+         * @param string $tokenCode
+         */
+        public function setNewPassword($idCode, $tokenCode){
+            $id = Utility::letoBase29Decode($idCode);
+            $token = base64_decode($tokenCode);
+            
+            $dbManager = new DbManager();
+            $result = $dbManager->query("reset_password", ["*"], "userId = ? and token = ?", [$id, $token]);
+            if(!$result){
+                return "TNFE"; //Token Not Found Error
+            }
+
+            //check expiry
+            $dateSent = strtotime($result['created_on']);
+            if(time() - $dateSent > (3600 * 24)){
+                $dbManager->delete("reset_password", "token = ?", [$token]);
+                return "ETE";//expired token error
+            }
+
+            //proceed to change password.
+            if(empty($this->password) || $this->password == null){
+                return "NPE";//Null password error
+            }
+
+            $this->password = password_hash($this->password, PASSWORD_DEFAULT);
+            if($dbManager->update("user", "user_password = ?", [$this->password], "id = ?", [$result["userId"]])){
+                $dbManager->delete("reset_password", "token = ?", [$token]);
+                return "OK";
+            }
+
+            return "SQE";
         }
 
         /**
