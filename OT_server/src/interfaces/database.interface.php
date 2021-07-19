@@ -6,9 +6,10 @@
          */
         public function connect();
 
-        public function selectFromTable($table, $columns, $condition_columns, $condition_values, $operator = 'and');
-        public function insertIntoTable($table, $columns, $values);
-        public function deleteFromTable($table, $condition_columns, $operator = 'and');
+        public function query($table, $columns, $condition_string, $condition_values);
+        public function insert($table, $columns, $values);
+        public function delete($table, $condition_string, $condition_values);
+        public function update($table, $columns_string, $values, $condition_string, $condition_values);
         public function rawSql($sql);
         public function close();
     }

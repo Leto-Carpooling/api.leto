@@ -59,24 +59,15 @@ class DbManager implements DatabaseInterface{
 	 *
 	 * @param string $table 
 	 * @param array $columns 
-	 * @param array $condition_columns 
-	 * @param array $condition_values 
-	 * @param string $operator 
+	 * @param string $condition_string 
+	 * @param array $condition_values  
 	 *
-	 * @return mixed
+	 * @return array|bool
 	 */
-	public function selectFromTable($table, $columns, $condition_columns, $condition_values, $operator = 'and') {
+	public function query($table, $columns, $condition_string, $condition_values) {
 		$this->connect();
 
-		$condition_string = "";
-		foreach($condition_columns as $column){
-			if($condition_string != ""){
-				$condition_string .= " $operator ";
-			}
-			$condition_string .= " $column = ?";
-		}
-
-		$sql = "SELECT" . implode ($columns, ", ") ." from `$table` where $condition_string";
+		$sql = "SELECT " . implode ($columns, ", ") ." from `$table` where $condition_string";
             $stmt = $this->dbConnection->prepare($sql);
 
             if($stmt->execute($condition_values)){
@@ -86,9 +77,9 @@ class DbManager implements DatabaseInterface{
             else{
                 $return = false;
             }
-
 			return $return;
 	}
+	
 	
 	/**
 	 *
@@ -98,7 +89,7 @@ class DbManager implements DatabaseInterface{
 	 *
 	 * @return int
 	 */
-	public function insertIntoTable($table, $columns, $values) {
+	public function insert($table, $columns, $values) {
 		$sql = "INSERT INTO `$table`(". implode($columns, ", "). ") values (". $this->buildInsertPlaceholders(count($values)) .")";
 
 		$this->connect();
@@ -110,17 +101,6 @@ class DbManager implements DatabaseInterface{
 		}
 		
 		return $newRowId;
-	}
-	
-	/**
-	 *
-	 * @param mixed $table 
-	 * @param mixed $condition_columns 
-	 * @param mixed $operator 
-	 *
-	 * @return mixed
-	 */
-	public function deleteFromTable($table, $condition_columns, $operator = 'and') {
 	}
 	
 	/**
@@ -176,6 +156,37 @@ class DbManager implements DatabaseInterface{
 	function setFetchAll($fetchAll): self {
 		$this->fetchAll = $fetchAll;
 		return $this;
+	}
+	/**
+	 *
+	 * @param string $table 
+	 * @param string $columns_string 
+	 * @param array $values 
+	 * @param string $condition_string 
+	 * @param array $condition_values 
+	 *
+	 * @return array|bool
+	 */
+	function update($table, $columns_string, $values, $condition_string, $condition_values) {
+		$this->connect();
+
+		$sql = "UPDATE `$table` set $columns_string where $condition_string";
+            $stmt = $this->dbConnection->prepare($sql);
+			$combinedValues = array_merge($values, $condition_values);
+            if($stmt->execute($combinedValues)){
+                return true;
+            }
+			return false;
+	}
+	/**
+	 *
+	 * @param mixed $table 
+	 * @param mixed $condition_string 
+	 * @param mixed $condition_values 
+	 *
+	 * @return mixed
+	 */
+	function delete($table, $condition_string, $condition_values) {
 	}
 }
 

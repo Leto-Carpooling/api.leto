@@ -14,4 +14,5 @@ require(__DIR__."../vendor/autoload.php");
     include(__DIR__ . "/interfaces/$interfacename.interface.php");
  });
 
+ include(__DIR__."/includes/session-readonly.inc.php");
 ?>

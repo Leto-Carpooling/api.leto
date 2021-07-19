@@ -7,7 +7,10 @@
                 $phone,
                 $password,
                 $id,
-                $dob;
+                $dob,
+                $emailVerified,
+                $type,
+                $profileImage;
 
         public function __construct(){
 
@@ -15,18 +18,50 @@
 
         /**
          * Loads a user from the database;
-         * @param int $userId
+         * @param int $user_id
          */
-        public function loadUser($userId){
+        public function loadUser($user_id){
+            $this->id = $user_id;
+            $dbManager = new DbManager();
+            $dbManager->setFetchAll(false);
+            $table = "user";
+            $values = [$this->id];
+            $userInfo = $dbManager->query($table, ["*"], "id = ?", $values);
 
+            if($userInfo && count($userInfo) > 0){
+                $this->setFirstName($userInfo['firstname']);
+                $this->setLastName($userInfo['lastname']);
+                $this->setEmail($userInfo['email']);
+                $this->setDob($userInfo['dob']);
+                $this->setPassword($userInfo['user_password']);
+                $this->setPhone($userInfo['phone']);
+                $this->setEmailVerified($userInfo['email_verified']);
+                $this->setType($userInfo["user_type"]);
+                $this->setProfileImage($userInfo["profile_image"]);
+                return true;
+            }
+            return false;
         }
 
         /**
          * Changes the user password when the user is logged in
          * @param string $oldPassword
          */
-        public function changePassword($oldPassword){
-
+        public function changePassword($oldPassword, $newPassword){
+            if(password_verify($oldPassword, $this->password)){
+                 if(Utility::isPasswordStrong($newPassword) !== true){
+                     return Utility::isPasswordStrong($newPassword);
+                 }
+                 $newPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+                 $table = "user";
+                 $values = [$newPassword];
+                 $dbManager = new DbManager();
+                 if($dbManager->update($table, "user_password = ?", $values, "id = ?", [$this->id])){
+                     return "OK";
+                 }
+                 return "SQE";
+            }
+            return "WPE";
         }
 
         /**
@@ -66,11 +101,11 @@
             $this->password = password_hash($this->password, PASSWORD_DEFAULT);
      
             $tableName = "user";
-            $column_specs = ["email","`password`","profile_image"];
-            $values = [$this->email, $this->password, "assets/img/logo.svg"];
+            $column_specs = ["email","type", "user_password","profile_image"];
+            $values = [$this->email,"rider", $this->password, User::DEFAULT_AVATAR];
 
             try{
-                $insertId = $dbManager->insertIntoTable($tableName, $column_specs, $values);
+                $insertId = $dbManager->insert($tableName, $column_specs, $values);
                 if($insertId != -1){
                     $this->id = $insertId;
                     if($this->sendConfEmail()){
@@ -80,10 +115,7 @@
                 }
            
             }
-            catch(Exception $exception){
-                
-            }
-
+            catch(Exception $exception){}
             return "SQE";
         }
 
@@ -98,13 +130,12 @@
     
             try{
                 $tableName = "user";
-                $columns = ["id","email","password"];
+                $columns = ["id","email","user_password"];
                 $values = [$this->email];
-                $condition = ["email"];
                 
                 $dbManager = new DbManager();
                 $dbManager->setFetchAll(false);
-                $details = $dbManager->selectFromTable($tableName, $columns, $condition, $values);
+                $details = $dbManager->query($tableName, $columns,"email = ?", $values);
                 
                 if($details){
                     $hashed_password = $details['password'];
@@ -119,16 +150,11 @@
 
                     return "OK"; //We have logged in successfully
                 }
-                else
-                {
-                    return "WEE";//wrong email error
-                } 
+                return "WEE";//wrong email error
             }
     
-            catch (Exception $e)
-            {
-                return "SQE"; //SQL Error
-            }
+            catch (Exception $e){}
+            return "SQE"; //SQL Error
         }
 
         public function logout(){
@@ -145,18 +171,17 @@
         /**
          * Checks if an email exist already
          * @param string $email
-         * @param DbManager $dbManager
+         * @param DatabaseInterface $dbManager
          * @return bool
          */
-        public static function doesEmailExist($email, $dbManager){
+        public static function doesEmailExist($email, DatabaseInterface $dbManager){
             $table = "user";
             $columns = ["email"];
-            $condition = ["email"];
             $values = [$email];
 
             $fetchAll = $dbManager->getFetchAll();
             $dbManager->setFetchAll(false);
-            $result = $dbManager->selectFromTable($table, $columns, $condition, $values);
+            $result = $dbManager->query($table, $columns, "email = ?", $values);
             $dbManager->setFetchAll($fetchAll);
 
             if($result && count($result) > 0){
@@ -328,6 +353,66 @@
         public function setDob($dob)
         {
                         $this->dob = $dob;
+
+                        return $this;
+        }
+
+        /**
+         * Get the value of emailVerified
+         */ 
+        public function getEmailVerified()
+        {
+                        return $this->emailVerified;
+        }
+
+        /**
+         * Set the value of emailVerified
+         *
+         * @return  self
+         */ 
+        public function setEmailVerified($emailVerified)
+        {
+                        $this->emailVerified = $emailVerified == 1;
+
+                        return $this;
+        }
+
+        /**
+         * Get the value of type
+         */ 
+        public function getType()
+        {
+                        return $this->type;
+        }
+
+        /**
+         * Set the value of type
+         *
+         * @return  self
+         */ 
+        public function setType($type)
+        {
+                        $this->type = $type;
+
+                        return $this;
+        }
+
+        /**
+         * Get the value of profileImage
+         */ 
+        public function getProfileImage()
+        {
+                        return $this->profileImage;
+        }
+
+        /**
+         * Set the value of profileImage
+         *
+         * @return  self
+         */ 
+        public function setProfileImage($profileImage)
+        {
+                        $this->profileImage = $profileImage;
 
                         return $this;
         }
