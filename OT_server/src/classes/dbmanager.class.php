@@ -171,7 +171,7 @@ class DbManager implements DatabaseInterface{
 	/**
 	 * 
 	 * @param bool $fetchAll 
-	 * @return Database
+	 * @return DbManager
 	 */
 	function setFetchAll($fetchAll): self {
 		$this->fetchAll = $fetchAll;

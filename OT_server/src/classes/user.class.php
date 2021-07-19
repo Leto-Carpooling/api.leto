@@ -104,11 +104,9 @@
                 
                 $dbManager = new DbManager();
                 $dbManager->setFetchAll(false);
-
                 $details = $dbManager->selectFromTable($tableName, $columns, $condition, $values);
                 
                 if($details){
-    
                     $hashed_password = $details['password'];
                     $userId = $details['id'];
     
@@ -146,10 +144,10 @@
 
         /**
          * Checks if an email exist already
-        * @param string $email
-        * @param DbManager $dbManager
-        * @return bool
-        */
+         * @param string $email
+         * @param DbManager $dbManager
+         * @return bool
+         */
         public static function doesEmailExist($email, $dbManager){
             $table = "user";
             $columns = ["email"];

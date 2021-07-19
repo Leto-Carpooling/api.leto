@@ -1,5 +1,8 @@
 <?php
-
+    session_start();
+    if(isset($_SESSION["userId"])){
+        exit("ALIE");//Already Logged In Error;
+    }
     require("master.inc.php");
     require("includes/phpmailer.inc.php");
 
@@ -9,5 +12,5 @@
     $newUser = new User();
     $newUser->setEmail($email);
     $newUser->setPassword($password);
-    echo $newUser->register();
+    exit($newUser->register());
 ?>
