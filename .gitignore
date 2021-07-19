@@ -9,6 +9,7 @@ bin-release/
 vendor/
 .env
 composer.lock
+passwords.inc.php
 
 # Executables
 *.swf
