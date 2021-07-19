@@ -193,12 +193,14 @@
              * @param string $input;
              * @return int;
              */
-             public static function letoBase29Decode($input){
+            public static function letoBase29Decode($input){
                 $origNum = base64_decode($input);
                 $origNum = base_convert($origNum, 29, 10);
                 $origNum = sqrt($origNum);
                 return $origNum/Utility::PRIME_NUMBER;
             }
+
+            
 
     }
 

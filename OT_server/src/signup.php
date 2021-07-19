@@ -1,9 +1,8 @@
 <?php
-    session_start();
-    if(isset($_SESSION["userId"])){
-        exit("ALIE");//Already Logged In Error;
-    }
     require("master.inc.php");
+    if($isLoggedIn){
+        exit(Response::$ALIE);
+    }
     require("includes/phpmailer.inc.php");
 
     $email = isset($_POST['email'])?$_POST['email']:null;

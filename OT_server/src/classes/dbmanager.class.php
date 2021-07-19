@@ -10,6 +10,7 @@ class DbManager implements DatabaseInterface{
     private $statements = [];
 	private $withOptions = false;
 	private $fetchAll = false;
+	private $currentStatement;
 
     /**
      * @param bool $options - to pass to the PDO connection
@@ -19,6 +20,7 @@ class DbManager implements DatabaseInterface{
         $this->dbPort = "3306"; //getenv('DB_PORT');
         $this->dbName   = "leto_db"; //getenv('DB_DATABASE');
         $this->withOptions = $options;
+		$this->currentStatement = null;
     }
 
 	/**
@@ -144,7 +146,7 @@ class DbManager implements DatabaseInterface{
 	 * 
 	 * @return bool
 	 */
-	function getFetchAll() {
+	public function getFetchAll() {
 		return $this->fetchAll;
 	}
 	
@@ -153,7 +155,7 @@ class DbManager implements DatabaseInterface{
 	 * @param bool $fetchAll 
 	 * @return DbManager
 	 */
-	function setFetchAll($fetchAll): self {
+	public function setFetchAll($fetchAll): self {
 		$this->fetchAll = $fetchAll;
 		return $this;
 	}
@@ -167,11 +169,12 @@ class DbManager implements DatabaseInterface{
 	 *
 	 * @return array|bool
 	 */
-	function update($table, $columns_string, $values, $condition_string, $condition_values) {
+	public function update($table, $columns_string, $values, $condition_string, $condition_values) {
 		$this->connect();
 
 		$sql = "UPDATE `$table` set $columns_string where $condition_string";
             $stmt = $this->dbConnection->prepare($sql);
+			$this->currentStatement = $stmt;
 			$combinedValues = array_merge($values, $condition_values);
             if($stmt->execute($combinedValues)){
                 return true;
@@ -180,14 +183,27 @@ class DbManager implements DatabaseInterface{
 	}
 	/**
 	 *
-	 * @param mixed $table 
-	 * @param mixed $condition_string 
-	 * @param mixed $condition_values 
+	 * @param string $table 
+	 * @param string $condition_string 
+	 * @param array $condition_values 
 	 *
-	 * @return mixed
+	 * @return bool
 	 */
-	function delete($table, $condition_string, $condition_values) {
+	public function delete($table, $condition_string, $condition_values) {
+		$sql = "DELETE from `$table` where $condition_string";
+		$stmt = $this->dbConnection->prepare($sql);
+		$this->currentStatement = $stmt;
+		if($stmt->execute($condition_values)){
+			return true;
+		}
+		return false;
 	}
+
+	public function getAffRowsCount(){
+		return $this->currentStatement->rowCount();
+	}
+
+	
 }
 
 ?>

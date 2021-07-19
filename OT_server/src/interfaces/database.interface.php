@@ -11,6 +11,7 @@
         public function delete($table, $condition_string, $condition_values);
         public function update($table, $columns_string, $values, $condition_string, $condition_values);
         public function rawSql($sql);
+        public function getAffRowsCount();
         public function close();
     }
 

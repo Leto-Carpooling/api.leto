@@ -1,4 +1,5 @@
 <?php
+use Dotenv\Loader\Resolver;
 
     class User implements UserInterface{
         private $firstName,
@@ -10,7 +11,10 @@
                 $dob,
                 $emailVerified,
                 $type,
-                $profileImage;
+                $evCode,
+                $profileImage,
+                $sessionId;
+
 
         public function __construct(){
 
@@ -37,6 +41,7 @@
                 $this->setEmailVerified($userInfo['email_verified']);
                 $this->setType($userInfo["user_type"]);
                 $this->setProfileImage($userInfo["profile_image"]);
+                $this->setEvCode($userInfo["ev_code"]);
                 return true;
             }
             return false;
@@ -56,11 +61,11 @@
                  $values = [$newPassword];
                  $dbManager = new DbManager();
                  if($dbManager->update($table, "user_password = ?", $values, "id = ?", [$this->id])){
-                     return "OK";
+                     return Response::$OK;
                  }
-                 return "SQE";
+                 return Response::$SQE;
             }
-            return "WPE";
+            return Response::$WPE;
         }
 
         /**
@@ -77,20 +82,20 @@
          */
         public function register(){
             if($this->email == null){
-                return "NEE"; //Null Email Error
+                return Response::$NEE; //Null Email Error
             }
     
             if($this->password == null){
-                return "NPE"; //Null Password Error
+                return Response::$NPE; //Null Password Error
             }
     
             if(!Utility::checkEmail($this->email)){
-                return "UEE"; //Unqualified Email Error
+                return Response::$UEE;
             }
             $dbManager = new DbManager();
 
             if(User::doesEmailExist($this->email, $dbManager)){
-                return "EEE"; //Email Exist Error
+                return Response::$EEE;
             }
     
             if(Utility::isPasswordStrong($this->password) !== true){
@@ -107,24 +112,24 @@
                 $insertId = $dbManager->insert($tableName, $column_specs, $values);
                 if($insertId != -1){
                     $this->id = $insertId;
-                    if($this->sendConfEmail()){
-                        return "OK";
-                    }
-                    return "SVE"; //Send Verification Email Error
+                    $this->sendConfEmail($dbManager);
+                    $sessionToken = openssl_random_pseudo_bytes(255);
+                    $dbManager->insert("session", ["userId", "session_token"], [$this->id, $sessionToken]);
+                    return Response::makeResponse("OK", "$this->id-$sessionToken");
                 }
            
             }
             catch(Exception $exception){}
-            return "SQE";
+            return Response::$SQE;
         }
 
         public function login(){
             if(!isset($this->email) || empty($this->email)){
-                return "NLE";//email empty error
+                return Response::$NEE;
             }
     
             if(!isset($this->password) || empty($this->password)){
-                return "NPE";//empty password error
+                return Response::$NPE;
             }
     
             try{
@@ -136,59 +141,68 @@
                 $details = $dbManager->query($tableName, $columns,"email = ?", $values);
                 
                 if($details){
-                    $hashed_password = $details['password'];
+                    $hashed_password = $details['user_password'];
                     $userId = $details['id'];
     
                     if(!password_verify($this->password, $hashed_password)){
-                        return "WPE";//wrong password error
+                        return Response::$WPE;
                     }
-    
-                    $_SESSION['userId'] = $userId;
                     $this->id = $userId;
 
-                    return "OK"; //We have logged in successfully
+                    $sessionToken = openssl_random_pseudo_bytes(255);
+                    $dbManager->insert("session", ["userId", "session_token"], [$this->id, $sessionToken]);
+                   
+                    return Response::makeResponse("OK", "$userId-$sessionToken");
                 }
-                return "WEE";//wrong email error
+
+                return Response::$WEE;
             }
     
             catch (Exception $e){}
-            return "SQE"; //SQL Error
+            return Response::$SQE;
         }
 
         public function logout(){
-            
+            if(!isset($this->sessionId)){
+                Return Response::$NLIE;
+            }            
+
+            $dbManager = new DbManager();
+            if($dbManager->delete("session", "session_id = ?", [$this->sessionId])){
+                return Response::$OK;
+            }
+
+            return Response::$SQE;
         }
 
         /**
          * A user forgot their password and wants a link to reset it.
          * The user email must be set.
+         * @return string
          */
         public function forgotPassword(){
             if(empty($this->email) || $this->email == null){
-                return "NLE";
+                return Response::$NEE;
             }
 
             $dbManager = new DbManager();
             $userInfo = $dbManager->query("user", ["id", "firstname", "lastname"], "email = ?", [$this->email]);
 
             if(!$userInfo || count($userInfo) < 1){
-                return "UNFE"; //User Not Found Error
+                return Response::$UNFE;
             }
 
             $this->id = $userInfo['id'];
-            $token = uniqid("PWC-", true);
+            $code = "";
+            for($i = 0; $i < 6; $i++){
+                $code .= random_int(1, 9);
+            }
+            $token = "$this->id-$code";
             
             $rowId = $dbManager->insert("reset_password", ["userId", "token"], [$this->id, $token]);
             if($rowId == -1){
-                return "SQE";
+                return Response::$SQE;
             }
-
-            //send the link
-            $encryptedId = Utility::letoBase29Encode($this->id);
-            $encryptedToken = base64_encode($token);
-
-            $idCode = $encryptedId;
-            $tokenCode = $encryptedToken;
 
             $fullName = $userInfo["firstname"]." ". $userInfo["lastname"];
             if(empty($fullName))
@@ -197,12 +211,12 @@
             }
 
             $sub = "Forgot Password";
-            $msg = "Enter these codes to change your password: Code 1: $idCode  Code 2: $tokenCode";
+            $msg = "Enter the code to change your password: $token";
 
            if(sendEmail($fullName, $this->email, $sub, $msg)){
-               return "OK";
+               return Response::makeResponse("OK", "We have sent the code to change your password to $this->email");
            }
-           return "UEO";
+           return Response::$UEO;
         }
 
         /**
@@ -210,35 +224,40 @@
          * @param string $idCode
          * @param string $tokenCode
          */
-        public function setNewPassword($idCode, $tokenCode){
-            $id = Utility::letoBase29Decode($idCode);
-            $token = base64_decode($tokenCode);
+        public function setNewPassword($code){
+            $decomposedCode = explode("-", $code);
+            $id = $decomposedCode[0];
+            $token = $decomposedCode[1];
             
             $dbManager = new DbManager();
             $result = $dbManager->query("reset_password", ["*"], "userId = ? and token = ?", [$id, $token]);
             if(!$result){
-                return "TNFE"; //Token Not Found Error
+                return Response::$CPTNFE;
             }
 
             //check expiry
             $dateSent = strtotime($result['created_on']);
             if(time() - $dateSent > (3600 * 24)){
                 $dbManager->delete("reset_password", "token = ?", [$token]);
-                return "ETE";//expired token error
+                return Response::$CPETE;
             }
 
             //proceed to change password.
             if(empty($this->password) || $this->password == null){
-                return "NPE";//Null password error
+                return Response::$NPE;
+            }
+
+            if(Utility::isPasswordStrong($this->password) !== true){
+                return Utility::isPasswordStrong($this->password);
             }
 
             $this->password = password_hash($this->password, PASSWORD_DEFAULT);
             if($dbManager->update("user", "user_password = ?", [$this->password], "id = ?", [$result["userId"]])){
                 $dbManager->delete("reset_password", "token = ?", [$token]);
-                return "OK";
+                return Response::$OK;
             }
 
-            return "SQE";
+            return Response::$SQE;
         }
 
         /**
@@ -276,25 +295,37 @@
          * The id and the email of the object should be set before this method is called.
          * include the phpmailer.inc.php file to make this function work
          */
-        public function sendConfEmail(){
+        public function sendConfEmail(DatabaseInterface $dbManager){
             if(empty($this->id) || empty($this->email)){
                 return false;
             }
-            $dateTimestamp = time();
-            $hostPortion = "localhost";
-            $encryptedId = Utility::letoBase29Decode($this->id);
-            $encryptedEmail = base64_encode(base64_encode($this->email));
-            $encryptedDate = Utility::letoBase29Encode($dateTimestamp);
-
-            $encrypedLink = "ez=$encryptedEmail&r=$encryptedDate&m=$encryptedId";
-            $link = "$hostPortion/confirmEmail.php?$encrypedLink";
-
-            $sub = "Verify your email";
-            $msg = "Please click the link to verify your email. A nice html will be written for this later. link is $link";
-
-            return sendEmail($this->email, $this->email, $sub, $msg);
+            
+            $code = "";
+            for($i = 0; $i < 6; $i++){
+                $code .= random_int(1, 9);
+            }
+            if($dbManager->update("user", "ev_code = ?", [$code], "id = ?", [$this->id])){
+                $sub = "Verify your email";
+                $msg = "Your email verification code is";
+    
+                return sendEmail($this->email, $this->email, $sub, $msg);
+            }
+            return false;
         }
 
+        public function confirmEmail($code){
+            if(empty($this->id) || $this->id == null){
+                return Response::$NIE;
+            }
+
+            $dbManager = new DbManager();
+            $dbManager->update("user", "email_verified = ?", [1], "id = ? and ev_code = ?", [$this->id, $code]);
+            if($dbManager->getAffRowsCount() > 0){
+                return Response::$OK;
+            }
+
+            return Response::makeResponse("WCE", "You entered an invalid code");
+        }
         
 
         /**
@@ -493,6 +524,46 @@
         public function setProfileImage($profileImage)
         {
                         $this->profileImage = $profileImage;
+
+                        return $this;
+        }
+
+        /**
+         * Get the value of evCode
+         */ 
+        public function getEvCode()
+        {
+                        return $this->evCode;
+        }
+
+        /**
+         * Set the value of evCode
+         *
+         * @return  self
+         */ 
+        public function setEvCode($evCode)
+        {
+                        $this->evCode = $evCode;
+
+                        return $this;
+        }
+
+        /**
+         * Get the value of sessionId
+         */ 
+        public function getSessionId()
+        {
+                        return $this->sessionId;
+        }
+
+        /**
+         * Set the value of sessionId
+         *
+         * @return  self
+         */ 
+        public function setSessionId($sessionId)
+        {
+                        $this->sessionId = $sessionId;
 
                         return $this;
         }
