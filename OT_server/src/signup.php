@@ -7,8 +7,6 @@
 
     //e = email test and s = signup
     $action = isset($_POST['action'])?$_POST['action']:"s";
-    var_dump($_POST);
-
     $email = isset($_POST['email'])?$_POST['email']:null;
     $newUser = new User();
     $newUser->setEmail($email);

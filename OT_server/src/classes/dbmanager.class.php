@@ -1,6 +1,6 @@
 <?php
 
-
+require_once(__DIR__."/../interfaces/database.interface.php");
 
 class DbManager implements DatabaseInterface{
     private $dbConnection = null;
@@ -33,7 +33,6 @@ class DbManager implements DatabaseInterface{
 			$pass = "";//getenv('DB_PASSWORD');
 			$dsn = "mysql:host=$this->dbHost;port=$this->dbPort;dbname=$this->dbName";
 			$options = [];
-			echo "username: $user, password: $pass";
 
 			if(!$this->withOptions){
 				$options = [ 
@@ -67,10 +66,9 @@ class DbManager implements DatabaseInterface{
 	 */
 	public function query($table, $columns, $condition_string, $condition_values) {
 		$this->connect();
-
+		
 		$sql = "SELECT " . implode ($columns, ", ") ." from `$table` where $condition_string";
             $stmt = $this->dbConnection->prepare($sql);
-
             if($stmt->execute($condition_values)){
                 $result = ($this->fetchAll)? $stmt->fetchAll() : $stmt->fetch();
                 $return = $result;
@@ -166,7 +164,7 @@ class DbManager implements DatabaseInterface{
 	 * @param string $condition_string 
 	 * @param array $condition_values 
 	 *
-	 * @return array|bool
+	 * @return bool
 	 */
 	public function update($table, $columns_string, $values, $condition_string, $condition_values) {
 		$this->connect();

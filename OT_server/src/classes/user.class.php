@@ -1,14 +1,16 @@
 <?php
-use Dotenv\Loader\Resolver;
+    require_once(__DIR__."/../interfaces/user.interface.php");
+    require_once(__DIR__."/../traits/user.trait.php");
 
     class User implements UserInterface{
+        use UserTrait;
+
         private $firstName,
                 $lastName,
                 $email,
                 $phone,
                 $password,
                 $id,
-                $dob,
                 $emailVerified,
                 $type,
                 $evCode,
@@ -35,7 +37,6 @@ use Dotenv\Loader\Resolver;
                 $this->setFirstName($userInfo['firstname']);
                 $this->setLastName($userInfo['lastname']);
                 $this->setEmail($userInfo['email']);
-                $this->setDob($userInfo['dob']);
                 $this->setPassword($userInfo['user_password']);
                 $this->setPhone($userInfo['phone']);
                 $this->setEmailVerified($userInfo['email_verified']);
@@ -52,6 +53,10 @@ use Dotenv\Loader\Resolver;
          * @param string $oldPassword
          */
         public function changePassword($oldPassword, $newPassword){
+            if(!$this->emailVerified){
+                return Response::makeResponse("EVE", "Please verify your email before changing your password");
+            }
+
             if(password_verify($oldPassword, $this->password)){
                  if(Utility::isPasswordStrong($newPassword) !== true){
                      return Utility::isPasswordStrong($newPassword);
@@ -66,13 +71,6 @@ use Dotenv\Loader\Resolver;
                  return Response::SQE();
             }
             return Response::WPE();
-        }
-
-        /**
-         * Save the user to the database
-         */
-        public function save(){
-
         }
 
         /**
@@ -105,19 +103,18 @@ use Dotenv\Loader\Resolver;
             $this->password = password_hash($this->password, PASSWORD_DEFAULT);
      
             $tableName = "user";
-            $column_specs = ["email","type", "user_password","profile_image"];
+            $column_specs = ["email","user_type", "user_password","profile_image"];
             $values = [$this->email,"rider", $this->password, User::DEFAULT_AVATAR];
 
             try{
                 $insertId = $dbManager->insert($tableName, $column_specs, $values);
                 if($insertId != -1){
                     $this->id = $insertId;
-                    $this->sendConfEmail($dbManager);
-                    $sessionToken = openssl_random_pseudo_bytes(255);
+                    User::sendConfirmationEmail($this->id, $this->email, $dbManager);
+                    $sessionToken = bin2hex(openssl_random_pseudo_bytes(255));
                     $dbManager->insert("session", ["userId", "session_token"], [$this->id, $sessionToken]);
                     return Response::makeResponse("OK", "$this->id-$sessionToken");
                 }
-           
             }
             catch(Exception $exception){}
             return Response::SQE();
@@ -149,10 +146,15 @@ use Dotenv\Loader\Resolver;
                     }
                     $this->id = $userId;
 
-                    $sessionToken = openssl_random_pseudo_bytes(255);
-                    $dbManager->insert("session", ["userId", "session_token"], [$this->id, $sessionToken]);
-                   
-                    return Response::makeResponse("OK", "$userId-$sessionToken");
+                    //remove the old tokens
+                    $sessionToken = bin2hex(openssl_random_pseudo_bytes(255));
+                    if(
+                        $dbManager->update("session", "session_token = ?", [$sessionToken], "userId = ?",[$this->id])
+                        ){
+                        return Response::makeResponse("OK", "$userId-$sessionToken");
+                    }
+
+                    return Response::SQE();
                 }
 
                 return Response::WEE();
@@ -162,6 +164,9 @@ use Dotenv\Loader\Resolver;
             return Response::SQE();
         }
 
+        /**
+         * Deletes the user session token
+         */
         public function logout(){
             if(!isset($this->sessionId)){
                 return Response::NLIE();
@@ -172,7 +177,7 @@ use Dotenv\Loader\Resolver;
             }
             
             $dbManager = new DbManager();
-            if($dbManager->delete("session", "session_id = ? and userId = ?", [$this->sessionId, $this->id])){
+            if($dbManager->update("session", "session_token = ?", [""], "userId = ?",[$this->id])){
                 return Response::OK();
             }
 
@@ -225,17 +230,16 @@ use Dotenv\Loader\Resolver;
 
         /**
          * Changes password from the forgotten password page.
-         * @param string $idCode
-         * @param string $tokenCode
+         * @param string $code
          */
         public function setNewPassword($code){
-            $decomposedCode = explode("-", $code);
-            $id = $decomposedCode[0];
-            $token = $decomposedCode[1];
+            $token = $code;
+            $id = explode("-", $code)[0];
+
             
             $dbManager = new DbManager();
             $result = $dbManager->query("reset_password", ["*"], "userId = ? and token = ?", [$id, $token]);
-            if(!$result){
+            if($result == false){
                 return Response::CPTNFE();
             }
 
@@ -271,64 +275,62 @@ use Dotenv\Loader\Resolver;
 
         }
 
-        /**
-         * Checks if an email exist already
-         * @param string $email
-         * @param DatabaseInterface $dbManager
-         * @return bool
-         */
-        public static function doesEmailExist($email, DatabaseInterface $dbManager){
-            $table = "user";
-            $columns = ["email"];
-            $values = [$email];
-
-            $fetchAll = $dbManager->getFetchAll();
-            $dbManager->setFetchAll(false);
-            $result = $dbManager->query($table, $columns, "email = ?", $values);
-            $dbManager->setFetchAll($fetchAll);
-
-            if($result && count($result) > 0){
-                return true;
-            }
-
-            return false;
-        }
-
-        /**
-         * This method sends the confirmation email to the user.
-         * The id and the email of the object should be set before this method is called.
-         * include the phpmailer.inc.php file to make this function work
-         */
-        public function sendConfEmail(DatabaseInterface $dbManager){
-            if(empty($this->id) || empty($this->email)){
-                return false;
-            }
-            
-            $code = "";
-            for($i = 0; $i < 6; $i++){
-                $code .= random_int(1, 9);
-            }
-            if($dbManager->update("user", "ev_code = ?", [$code], "id = ?", [$this->id])){
-                $sub = "Verify your email";
-                $msg = "Your email verification code is";
-    
-                return sendEmail($this->email, $this->email, $sub, $msg);
-            }
-            return false;
-        }
-
         public function confirmEmail($code){
             if(empty($this->id) || $this->id == null){
                 return Response::NIE();
             }
 
             $dbManager = new DbManager();
-            $dbManager->update("user", "email_verified = ?", [1], "id = ? and ev_code = ?", [$this->id, $code]);
-            if($dbManager->getAffRowsCount() > 0){
-                return Response::OK();
+            //check if there is an email in the temporary_email table. If there is, then that is what we are confirming.
+            
+           
+            if($dbManager->update("user", "email_verified = ?, ev_code = 0", [1], "id = ? and ev_code = ?", [$this->id, $code]) === false){
+                return Response::SQE();
             }
 
-            return Response::makeResponse("WCE", "You entered an invalid code");
+            if($dbManager->getAffRowsCount() < 1){
+                return Response::makeResponse("WCE", "You entered an invalid code");
+            }
+
+            $temporaryEmail = $dbManager->query("temporary_email", ["email"], "userId = ?", [$this->id]);
+
+            if($temporaryEmail !== false){
+
+                if($dbManager->update("user", "email = ?", [$temporaryEmail["email"]], "id = ?", [$this->id]) === false){
+                    return Response::SQE();
+                }
+            }
+
+            return Response::OK();
+        }
+
+        public function confirmPhone($code){
+            if(empty($this->id) || $this->id == null){
+                return Response::NIE();
+            }
+
+            $dbManager = new DbManager();
+            $temporaryPhone = $dbManager->query("temporary_phone_number", ["phone", "pv_code"], "userId = ?", [$this->id]);
+
+            if($temporaryPhone === false){
+                return Response::makeResponse("NPNFE", "You have verified the phone number attached to this account");
+            }
+
+            if($temporaryPhone["pv_code"] != $code){
+                return Response::makeResponse("WCE", "You entered an invalid code");
+            }
+
+            if($dbManager->update("user", "phone = ?", [$temporaryPhone["phone"]], "id = ?", [$this->id]) === false){
+                return Response::SQE();
+            }
+
+            if($dbManager->getAffRowsCount() < 1){
+                return Response::UEO();   
+            }
+            
+            $dbManager->delete("temporary_phone_number", "userId = ?", [$this->id]);
+            return Response::OK();
+                     
         }
         
 
@@ -448,26 +450,6 @@ use Dotenv\Loader\Resolver;
         public function setId($id)
         {
                         $this->id = $id;
-
-                        return $this;
-        }
-
-        /**
-         * Get the value of dob
-         */ 
-        public function getDob()
-        {
-                        return $this->dob;
-        }
-
-        /**
-         * Set the value of dob
-         *
-         * @return  self
-         */ 
-        public function setDob($dob)
-        {
-                        $this->dob = $dob;
 
                         return $this;
         }

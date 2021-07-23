@@ -6,11 +6,11 @@
 
     require("includes/phpmailer.inc.php");
 
-    $dataObject = json_decode($_POST['data']);
+    $action = isset($_POST["action"])? $_POST["action"]: "nothing";
     $user = new User();
 
-    switch($dataObject->action){
-        case "sl":
+    switch($action){
+        case "sc":
             {
                 $email = isset($_POST['email'])?$_POST['email']:null;
                 $user->setEmail($email);

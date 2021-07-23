@@ -23,7 +23,7 @@
             }
             return false;
         }
-        
+      
          /**
           * Checks to verify that the email meets the requirement
           */
@@ -66,37 +66,11 @@
              }
            }
     
-            /**
-             * This function allows the uploading of images.
-             * It takes the Image Array, the name of the image and the directory to place the image in.
-             * When an image is given a name, the name is appended with a -uniqueId to make the image 
-             * name unique. For example, a name Levi, after upload will be Levi-123a3bc4567c2.jpeg. 
-             * All images are saved as a jpeg format. To retrieve an image, please use the returnImgSrc
-             * function to give you the image source. This is because the unique Id after the image has
-             * been uploaded makes it impossible to fetch it directly.
-             * @param array $image - The image array from $_FILES
-             * @param string $save_name - The name to save the image with
-             * @param string $in_directory - The directory in which the image should be saved.
-             * The directory will be autoloaded. So you don't have to worry about the ../. hehe. However
-             * It must be in the storage directory.
-             * @param bool $update = false. If you are updating a currently existing image, then
-             * set this parameter to true. It will allow the method to delete the previously existing 
-             * image and upload the new one.
-             * 
-             * @return bool
-             */
-
-             public static function uploadImage(array $image, $save_name, $in_directory, $update = false){
+        
+             public static function uploadImage(array $image, $save_name, $in_directory, $update = false, $last_saved_as = ""){
                 $ext = pathinfo($image['name'], PATHINFO_EXTENSION);
                 $ext = strtolower($ext);
 
-                //if we are updating an image, we will go ahead and delete the previously existing one.
-                if($update){
-                    $oldImage = "../".self::returnImageFullName($save_name, $in_directory);
-                    if(file_exists($oldImage) && $oldImage != "../"){
-                        unlink("$oldImage");
-                    }  
-                }
                 switch (exif_imagetype($image['tmp_name'])) {
                     case IMAGETYPE_PNG:
                         $imageTmp=imagecreatefrompng($image['tmp_name']);
@@ -117,9 +91,17 @@
                 }
             
                 // quality is a value from 0 (worst) to 100 (best)
-                $name = "storage/".$in_directory."/".$save_name."-".uniqid().".jpeg";
-                if(imagejpeg($imageTmp, "../../$name", 70)){
+                $name = $save_name."-".uniqid().".jpeg";
+                if(imagejpeg($imageTmp, "../storage/$in_directory/$name", 70)){
                     imagedestroy($imageTmp);
+
+                    if($update && $last_saved_as != ""){
+                        $oldImage = "../storage/$in_directory/$last_saved_as";
+                        if(file_exists($oldImage)){
+                            unlink("$oldImage");
+                        }  
+                    }
+                    
                     return $name;
                 }
                 else{
@@ -136,7 +118,7 @@
              */
              public static function isImage($path){
                 $check = exif_imagetype($path);
-                if(in_array($check, array('jpg', IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_BMP, IMAGETYPE_WEBP))){
+                if(in_array($check, array(IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_BMP, IMAGETYPE_WEBP))){
                     return true;
                 }
                 return false;
@@ -193,7 +175,15 @@
                 return $origNum/Utility::PRIME_NUMBER;
             }
 
-            
+            public static function make6digitCode(){
+                $code = "";
+                for($i = 0; $i < 6; $i++)
+                {
+                    $code .= random_int(1, 9);
+                }
+
+                return $code;
+            }
 
     }
 

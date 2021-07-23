@@ -3,7 +3,7 @@
     class Response{
         /**
          * Wrong Email Error
-         * @property string $WEE
+         * @return string 
          */
         public static function WEE(){
             return json_encode([
@@ -13,7 +13,7 @@
 
         /**
          * SQL Error
-         * @property string $SQE
+         * @return string
          */
         public static function SQE(){
             return json_encode(
@@ -23,7 +23,7 @@
 
         /**
          * Wrong Password Error
-         * @property string $WPE
+         * @return string
          */
         public static function WPE(){
             return json_encode([
@@ -33,7 +33,7 @@
 
         /**
          * No Password Error
-         * @property string $NPE
+         * @return string
          */
         public static function NPE(){
             return json_encode([
@@ -43,7 +43,7 @@
 
         /**
          * No Email Error
-         * @property string $NEE
+         * @return string
          */
         public static function NEE(){
             return json_encode([
@@ -53,7 +53,7 @@
 
         /**
          * No ID Error
-         * @property string $NIE
+         * @return string
          */
         public static function NIE(){
             return json_encode([
@@ -63,7 +63,7 @@
 
         /**
          * Email Exist Error
-         * @property string $EEE
+         * @return string
          */
         public static function EEE(){
             return json_encode([
@@ -73,7 +73,7 @@
 
         /**
          * Unqualified Email Error
-         * @property string $UEE
+         * @return string
          */
         public static function UEE(){
             return json_encode([
@@ -82,8 +82,44 @@
         ]);}
 
         /**
+         * Unqualified Phone number Error
+         * @return string
+         */
+        public static function UQPNE(){
+            return json_encode([
+            "status" => "UQPNE", 
+            "message" => "The phone number you entered is invalid"
+        ]);}
+
+        /**
+         * Phone Number Exist Error
+         * @return string
+         */
+        public static function PNEE(){
+            return json_encode([
+            "status" => "PNEE", 
+            "message" => "The phone number you entered is already attached to another account"
+        ]);}
+
+        /**
+         * Uqualified Name Error
+         * @return string
+         */
+        public static function UNE(){
+            return Response::makeResponse("UNE", "The name contains unaccepted characters");
+        }
+
+        /**
+         * Invalid Image Error
+         * @return string
+         */
+        public static function IIE(){
+            return Response::makeResponse("IEE", "The image you entered is invalid. Accepted image types are: .jpeg, .png, .gif, .bmp, .webp");
+        }
+
+        /**
          * User Not Found Error
-         * @property string $UNFE
+         * @return string
          */
         public static function UNFE(){
             return json_encode([
@@ -93,7 +129,7 @@
 
         /**
          * Uknown Error Occurred
-         * @property string $UEO
+         * @return string
          */
         public static function UEO(){
             return json_encode([
@@ -103,7 +139,7 @@
 
         /**
          * Change Password Token Not Found Error
-         * @property string $CPTNFE
+         * @return string
          */
         public static function CPTNFE(){
             return json_encode([
@@ -113,7 +149,7 @@
 
         /**
          * Change Password Expired Token Error
-         * @property string $CPETE
+         * @return string
          */
         public static function CPETE(){
             return json_encode([
@@ -123,7 +159,7 @@
 
         /**
          * General OK
-         * @property string $OK
+         * @return string
          */
         public static function OK(){
             return json_encode([
@@ -133,7 +169,7 @@
 
         /**
          * Already Logged In Error
-         * @property string $ALIE
+         * @return string
          */
         public static function ALIE(){
             return json_encode([
@@ -143,7 +179,7 @@
 
         /**
          * Not Logged In Error
-         * @property string $NLIE
+         * @return string
          */
         public static function NLIE(){
             return json_encode([
@@ -160,10 +196,11 @@
          * @return string
          */
         public static function makeResponse($status, $message){
-            return json_encode([
+            $response = [
                 "status" => $status, 
                 "message" => $message
-            ]);
+            ];
+            return json_encode($response);
         }
 
     }
