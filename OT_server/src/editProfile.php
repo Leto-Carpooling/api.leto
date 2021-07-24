@@ -1,10 +1,11 @@
 <?php
-/**
- * Please send every data with the post request.
- * That is, all fields must be included.
- * first-name, last-name, email, phone, and profile-image.
- * the profile-image will be empty if not image was sent.
- */
+    /**
+     * Please send every data with the post request.
+     * That is, all fields must be included.
+     * first-name, last-name, email, phone, and profile-image.
+     * the profile-image will be empty if not image was sent.
+     */
+    
     require("master.inc.php");
 
     if(!$isLoggedIn){exit(Response::NLIE());}
@@ -64,6 +65,8 @@
     
             $updateSqlStr = "profile_image = ?";
             $newValues[] = $newProfileImage;
+        }else{
+            $message .= " An error occurred while uploading your profile picture. ";
         }
     }
 
