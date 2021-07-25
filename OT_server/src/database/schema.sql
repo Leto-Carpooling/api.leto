@@ -32,7 +32,7 @@ CREATE TABLE `session` (
   FOREIGN KEY (`userId`) REFERENCES `user`(`id`) on delete cascade
 );
 
-CREATE TABLE `temporary_phone_numbers` (
+CREATE TABLE `temporary_phone_number` (
   `id` bigint unsigned not null primary key auto_increment,
   `userId` bigint unsigned not null,
   `phone` varchar(256) ,
@@ -82,12 +82,12 @@ CREATE TABLE `vehicle` (
   `vehicle_color` varchar(100) not null,
   `created_on` datetime default current_timestamp,
   `updated_on` datetime default current_timestamp on update current_timestamp   ,
-  FOREIGN KEY (`driverId`) REFERENCES `driver_information`(`driverId`) on delete cascade
+  FOREIGN KEY (`driverId`) REFERENCES `driver_information`(`driverId`) on delete CASCADE
 );
 
 CREATE TABLE `vehicle_document` (
   `vehicleId` bigint unsigned not null primary key  ,
-  `v_insurance_image` varchar(100),
+`v_insurance_image` varchar(100),
   `v_registration_image` varchar(100),
   `v_inspection_report_image` varchar(100) ,
   `created_on` datetime default current_timestamp ,

@@ -12,6 +12,33 @@ class DbManager implements DatabaseInterface{
 	private $fetchAll = false;
 	private $currentStatement;
 
+	const USER_TABLE = "user",
+	      USER_ID = "`user`.`id`",
+
+		  SESSION_TABLE = "session",
+		  SESSION_ID = "`session`.`session_id`",
+
+		  TMP_EMAIL_TABLE = "temporary_email",
+		  TMP_EMAIL_ID = "`temporary_email`.`id`",
+
+		  TMP_PHONE_TABLE = "temporary_phone_number",
+		  TMP_PHONE_ID = "`temporary_phone_number`.`id`",	
+
+		  RESET_PASSWORD_TABLE = "reset_password",
+		  RESET_PASSWORD_ID = "`reset_password`.`id`",
+
+		  DRIVER_INFO_TABLE = "driver_information",
+		  DRIVER_INFO_ID = "`driver_information`.`driverId`",
+
+		  DRIVER_DOC_TABLE = "driver_document",
+		  DRIVER_DOC_ID = "`driver_document`.`driverId`",
+
+		  VEHICLE_TABLE = "vehicle",
+		  VEHICLE_ID = "`vehicle`.`vehicle_id`",
+
+		  VEHICLE_DOC_TABLE = "vehicle_document",
+		  VEHICLE_DOC_ID = "`vehicle_document`.`vehicleId`";
+
     /**
      * @param bool $options - to pass to the PDO connection
      */

@@ -18,8 +18,12 @@
                 $sessionId;
 
 
-        public function __construct(){
+        public function __construct($id = 0){
+            if($id == 0){
+                return;
+            }
 
+            $this->loadUser($id);
         }
 
         /**
