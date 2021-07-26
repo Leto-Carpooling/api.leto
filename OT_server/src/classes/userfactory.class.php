@@ -7,7 +7,7 @@
          * @param int $userId
          * @return UserInterface|bool
          */
-        public function createUser($user_id){
+        public static function createUser($user_id){
             $dbManager = new DbManager();
             $userType = $dbManager->query(DbManager::USER_TABLE, ["user_type"], "id = ?", [$user_id]);
 
@@ -15,14 +15,14 @@
                 return false;
             }
 
-            return $this->makeUser($userType['user_type'], $user_id);
+            return self::makeUser($userType['user_type'], $user_id);
         }
 
         /**
          * Returns a user of the specified type
          * @param  string $user_type
          */
-        private function makeUser($user_type, $user_id){
+        private static function makeUser($user_type, $user_id){
             switch($user_type){
                 case "admin":
                     {

@@ -1,6 +1,17 @@
 <?php
 
     class Response{
+
+        /**
+         * Programming Error
+         * @return string
+         */
+        public static function PE(){
+            return Response::makeResponse(
+                "PE",
+                "You made a programming error. Either scripts are not included correctly"
+            );}
+
         /**
          * Wrong Email Error
          * @return string 
@@ -138,6 +149,16 @@
         ]);}
 
         /**
+         * Cannont Update User Error
+         * @return string
+         */
+        public static function CUUE(){
+            return json_encode([
+            "status" => "CUUE", 
+            "message" => "To update your account, your first name, last name, email, phone number, and profile image must be set"
+        ]);}
+
+        /**
          * Change Password Token Not Found Error
          * @return string
          */
@@ -187,8 +208,6 @@
             "message" => "You are not logged in"
         ]);}
 
-
-
         /**
          * Make a new response
          * @param string $status - Status code
@@ -203,6 +222,175 @@
             return json_encode($response);
         }
 
+        /**
+         * ----------------------------------
+         * Driver responses Below
+         * ----------------------------------
+         */
+
+        /**
+          * Null National ID Error
+          * @return string
+          */
+        public static function NNIE(){
+            return self::makeResponse(
+                "NNIE",
+                "National ID field cannot be empty"
+            );
+        }
+
+        /**
+          * Null National ID Image Error
+          * @return string
+          */
+        public static function NIIIE(){
+            return self::makeResponse(
+                "NIIIE",
+                "National ID Image is invalid. Only ". Utility::$acceptedImages. " are allowed"
+            );
+        }
+
+        /**
+          * Regular License Image Invalid Error
+          * @return string
+          */
+        public static function RLIIE(){
+            return self::makeResponse(
+                "RLIIE",
+                "Driving license image is invalid. Only ". Utility::$acceptedImages. " are allowed"
+            );
+        }
+
+        /**
+          * Public Service Vehicle License Image Invalid Error
+          * @return string
+          */
+        public static function PSVLIIE(){
+            return self::makeResponse(
+                "PSVLIIE",
+                "Public Service Vehicle driving license image is invalid. Only ". Utility::$acceptedImages. " are allowed"
+            );
+        }
+
+        /**
+         * Null Regular License Error
+         * @return string
+         */
+        public static function NRLE(){
+            return self::makeResponse(
+                "NRLE",
+                "Your driving license number is required"
+            );
+        }
+
+        /**
+         * ---------------------------------
+         * Vehicle Errors
+         * ---------------------------------
+         */
+
+         /**
+          * Null Vehicle Manufacturer error
+          * @return string
+          */
+        public static function NVMAE(){
+            return Response::makeResponse(
+                "NMAE",
+                "Please add the manufacturer of the vehicle"
+            );
+        }
+
+        /**
+         * Null Vehicle Model Error
+         * @return string
+         */
+        public static function NVME(){
+            return Response::makeResponse(
+                "NVME",
+                "Please add the model of the vehicle you have"
+            );
+        }
+
+        /**
+         * Unqualified Vehicle Capacity Error
+         * @return string
+         */
+        public static function UVCE(){
+            return Response::makeResponse(
+                "UVCE",
+                "Please enter a valid capacity of your vehicle"
+            );
+        }
+
+
+        /**
+         * Null Vehicle License Error
+         * @return string
+         */
+        public static function NVLE(){
+            return Response::makeResponse(
+                "NVLE",
+                "Please add the License plate number of your vehicle"
+            );
+        }
+
+        /**
+         * Null Vehicle Color Error
+         * @return string
+         */
+        public static function NVCE(){
+            return Response::makeResponse(
+                "NVCE",
+                "You did not write the color of your vehicle"
+            );
+        }
+
+        
+        /**
+         * Vehicle Null ID Error
+         * @return string
+         */
+        public static function VNIE(){
+            return Response::makeResponse(
+                "VNIE",
+                "You have not added any vehicle yet"
+            );
+        }
+
+        /**
+         * Vehicle Insurance Image Invalid Error
+         * @return string
+         */
+        public static function VIIIE(){
+            return Response::makeResponse(
+                "VIIIE",
+                "The insurance document image of the vehicle is invalid. Only " . Utility::$acceptedImages. " are allowed"
+            );
+        }
+
+        
+        /**
+         * Vehicle Registration Image Invalid Error
+         * @return string
+         */
+        public static function VRIIE(){
+            return Response::makeResponse(
+                "VRIIE",
+                "The registration document image of the vehicle is invalid. Only " . Utility::$acceptedImages. " are allowed"
+            );
+        }
+
+        
+        /**
+         * Vehicle Inspection Report Image Invalid Error
+         * @return string
+         */
+        public static function VIRIIE(){
+            return Response::makeResponse(
+                "VIRIIE",
+                "The inspection report document image of the vehicle is invalid. Only " . Utility::$acceptedImages. " are allowed"
+            );
+        }
     }
 
 ?>

@@ -9,7 +9,14 @@
             $goodConductCertImage = "pending",
             $approvalStatus = "pending",
             $updated,
+            $updatedDocumentOn,
             $vehicle;
+
+    const NATIONALID_PATH = "driver/national_id_images",
+          DLICENSE_PATH = "driver/licenses/regular",
+          PSVLICENSE_PATH = "driver/psv",
+          GOODCONDUCT_PATH = "driver/";
+
 
     public function __construct($id = 0){
         parent::__construct($id);
@@ -48,6 +55,7 @@
         $this->setRegLicenseImage($driverDoc["regular_license_image"]);
         $this->setPsvLicenseImage($driverDoc["psv_license_image"]);
         $this->setGoodConductCertImage($driverDoc["good_conduct_cert_image"]);
+        $this->setUpdatedDocumentOn($driverDoc["updated_on"]);
 
         $vehicle = new Vehicle();
         if($vehicle->loadVehicle($this->id) === false){
@@ -57,6 +65,50 @@
         $this->setVehicle($vehicle);
     }
 
+    /**
+     * Save or updates a driver national Id and registration license
+     */
+
+    public function saveDriver(){
+        //this is a new driver
+        if(empty($this->updated)){
+            return $this->addDriver();
+        }
+
+        return $this->updateDriver();
+    }
+
+    /**
+     * Adds a new driver
+     */
+    private function addDriver(){
+        $dbManager = new DbManager();
+        if($dbManager->insert(DbManager::DRIVER_INFO_TABLE, 
+        [DbManager::DRIVER_INFO_ID, "national_id", "regular_license", "approval_status"], 
+        [$this->id, $this->nationalId, $this->regLicense, "pending"]) == -1){
+            return false;
+        }
+
+        if($dbManager->insert(DbManager::DRIVER_DOC_TABLE, 
+                             [DbManager::DRIVER_DOC_ID], 
+                             [$this->id]) == -1){
+            $dbManager->delete(DbManager::DRIVER_INFO_TABLE, DbManager::DRIVER_INFO_ID ." = ?", [$this->id]);
+            return false;
+        }
+
+        return true;
+    }
+
+    public function updateDriver(){
+        $dbManager = new DbManager();
+        return 
+            $dbManager->update(
+            DbManager::DRIVER_INFO_TABLE, 
+            "national_id = ?, regular_license = ?", 
+            [$this->nationalId, $this->regLicense],
+            DbManager::DRIVER_INFO_ID ." = ?",
+            [$this->id]);
+    }
     /**
      * Get the value of nationalId
     */ 
@@ -159,6 +211,7 @@
 
     /**
      * Get the value of vehicle
+     * @return Vehicle
     */ 
     public function getVehicle()
     {
@@ -233,6 +286,26 @@
     public function setNationalIdImage($nationalIdImage)
     {
                 $this->nationalIdImage = $nationalIdImage;
+
+                return $this;
+    }
+
+    /**
+     * Get the value of updatedDocumentOn
+     */ 
+    public function getUpdatedDocumentOn()
+    {
+                return $this->updatedDocumentOn;
+    }
+
+    /**
+     * Set the value of updatedDocumentOn
+     *
+     * @return  self
+     */ 
+    public function setUpdatedDocumentOn($updatedDocumentOn)
+    {
+                $this->updatedDocumentOn = $updatedDocumentOn;
 
                 return $this;
     }

@@ -16,6 +16,10 @@ class Vehicle{
             $inspReportImage = "pending",
             $documentUpdatedOn;
 
+    const   INSURANCE_PATH = "driver/vehicle/insurances",
+            REGISTRATION_PATH = "driver/vehicle/registrations",
+            IREPORT_PATH = "driver/vehicle/inspection_reports";
+
     public function __construct($driver_id = 0){
 
         if($driver_id == 0){
@@ -56,7 +60,65 @@ class Vehicle{
         return true;
     }
 
-    
+    public function save(){
+        if(empty($this->manufacturer)){
+            return Response::NVMAE();
+        }
+
+        if(empty($this->model)){
+            return Response::NVME();
+        }
+
+        if(empty($this->capacity) || !is_int($this->capacity) || $this->capacity < 2){
+            return Response::UVCE();
+        }
+
+        if(empty($this->licenseNumber)){
+            return Response::NVLE();
+        }
+
+        if(empty($this->color)){
+            return Response::NVCE();
+        }
+
+        $updateStr = "manufacturer = ?, model = ?, license_plate = ?, vehicle_color = ?, capacity = ?";
+        if((empty($this->id) && !$this->addVehicle()) ||
+            !$this->updateVehicle($updateStr, [$this->manufacturer, $this->model, $this->color, $this->capacity])){
+            return Response::SQE();
+        }
+
+        return Response::OK();
+    }
+
+    private function addVehicle(){
+
+        $dbManager = new DbManager();
+        $vehicleId = $dbManager->insert(DbManager::VEHICLE_TABLE, ["driverId", "manufacturer", "model", "capacity", "license_plate", "vehicle_color"], [$this->driverId, $this->manufacturer, $this->model, $this->capacity, $this->licenseNumber, $this->color]);
+        
+        if($vehicleId == -1){
+            return false;
+        }
+
+        $this->id = $vehicleId;
+
+        $vDocId = $dbManager->insert(DbManager::VEHICLE_DOC_TABLE, [DbManager::VEHICLE_DOC_ID], [$this->id]);
+
+        if($vDocId == -1){
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param string $updateSqlStr - The sql string
+     * @param array $values - The values array
+     */
+    public function updateVehicle($updateSqlStr, array $values){
+        $dbManager = new DbManager();
+        return $dbManager
+                ->update(DbManager::VEHICLE_TABLE, $updateSqlStr, $values, DbManager::VEHICLE_ID . " = ?", [$this->id]);
+    }
 
     /**
      * Get the value of id

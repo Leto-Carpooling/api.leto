@@ -337,6 +337,24 @@
                      
         }
         
+        /**
+         * Can the user upgrade to driver and admin?
+         * This function checks that the minimum requirements are met.
+         * @return bool
+         */
+        public function canUpgrade(){
+            if(empty($this->firstName) ||
+               empty($this->lastName) ||
+               empty($this->phone) ||
+               empty($this->email) ||
+               empty($this->profileImage) ||
+               !file_exists("storage/profile_images/$this->profileImage")
+               ){
+                return false;
+            }
+
+            return true;
+        }
 
         /**
          * Get the value of firstName

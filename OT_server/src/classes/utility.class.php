@@ -3,6 +3,7 @@
     class Utility {
         public static $nameRegex = "/^[\w]+(\s?[\w\-_\'\.]+?\s*?)+?$/";
         public static $phoneRegex = "/^\+\d{12}$/"; 
+        public static $acceptedImages = ".jpg, .png, .bmp, .gif, .webp";
         const PRIME_NUMBER = 1879;
         /**
          * checks names to ensure that they meet policy
