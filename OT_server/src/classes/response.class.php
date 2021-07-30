@@ -11,7 +11,16 @@
                 "PE",
                 "You made a programming error. Either scripts are not included correctly"
             );}
-
+        /**
+         * Unqualified Type Error
+         * @return string
+         */
+        public static function UTE(){
+            return Response::makeResponse(
+                "UTE",
+                "You don't have the privilege to perform this function"
+            );
+        }
         /**
          * Wrong Email Error
          * @return string 
@@ -391,6 +400,8 @@
                 "The inspection report document image of the vehicle is invalid. Only " . Utility::$acceptedImages. " are allowed"
             );
         }
+
+        
     }
 
 ?>

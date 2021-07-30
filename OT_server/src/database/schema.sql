@@ -4,7 +4,7 @@ CREATE TABLE `user` (
   `lastname` varchar(255) ,
   `email` varchar(255) not null,
   `phone` varchar(20),
-  `dob` date,
+  `account_status` enum("enabled", "disabled") not null,
   `profile_image` varchar(255),
   `user_type` enum ("rider", "driver", "admin"),
   `ev_code` int(6) default 0,

@@ -16,7 +16,14 @@
           DLICENSE_PATH = "driver/licenses/regular",
           PSVLICENSE_PATH = "driver/psv",
           GOODCONDUCT_PATH = "driver/";
-
+    
+    /**
+     * Database tables
+     */
+    const DRIVER_TABLE = "driver_information",
+          DRIVER_ID = "`". Driver::DRIVER_TABLE."`.`driverId`",
+          DRIVER_DOC_TABLE = "driver_document",
+          DRIVER_DOC_ID = "`".Driver::DRIVER_DOC_ID."`.`driverId`";
 
     public function __construct($id = 0){
         parent::__construct($id);
@@ -92,7 +99,12 @@
         if($dbManager->insert(DbManager::DRIVER_DOC_TABLE, 
                              [DbManager::DRIVER_DOC_ID], 
                              [$this->id]) == -1){
-            $dbManager->delete(DbManager::DRIVER_INFO_TABLE, DbManager::DRIVER_INFO_ID ." = ?", [$this->id]);
+            $dbManager->delete(DbManager::DRIVER_INFO_TABLE, DbManager::DRIVER_INFO_ID ." = ?", 
+            [$this->id]);
+            return false;
+        }
+
+        if(!$dbManager->update(DbManager::USER_TABLE, "user_type = ?", ["driver"], DbManager::USER_ID ." = ?", [$this->id])){
             return false;
         }
 
@@ -108,6 +120,50 @@
             [$this->nationalId, $this->regLicense],
             DbManager::DRIVER_INFO_ID ." = ?",
             [$this->id]);
+    }
+
+
+    /**
+     * Can this driver be approved?
+     * @return bool
+     */
+    public function isApprovable(){
+        if(!$this->canUpgrade() ||
+           empty($this->nationalIdImage) ||
+           empty($this->regLicenseImage) ||
+           empty($this->psvLicenseImage) ||
+           empty($this->goodConductCertImage) ||
+           empty($this->vehicle) ||
+           !$this->vehicle->isApprovable() ){
+            return false;
+        }
+        return true;
+    }
+
+    public function approve(){
+        if(empty($this->id)){
+            return false;
+        }
+
+        return $this->changeApprovalStatus("approved");
+        
+    }
+
+    public function decline(){
+        if(empty($this->id)){
+            return false;
+        }
+
+        return $this->changeApprovalStatus("declined");
+    }
+
+    private function changeApprovalStatus($status){
+        if(!in_array($status, ["declined", "pending", "approved"])){
+            $status = "pending";
+        }
+        $this->approvalStatus = $status;
+        $dbManager = new DbManager();
+        return $dbManager->update(DbManager::DRIVER_INFO_TABLE, "approval_status = ? ", [$status], DbManager::DRIVER_INFO_ID . "= ?", [$this->id]);
     }
     /**
      * Get the value of nationalId

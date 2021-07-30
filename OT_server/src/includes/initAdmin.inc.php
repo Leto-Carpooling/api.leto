@@ -1,4 +1,6 @@
 <?php
+
+
     if(!isset($userId)){
         exit(Response::PE());
     }
@@ -13,16 +15,13 @@
         exit(Response::UEO());
     }
 
+    $admin = $user;
 
-    //check that the user meets the minimum requirements to upgrade
-    if(!$user->canUpgrade()){
-        exit(Response::CUUE());
-    }
-    $newDriver = $user;
-    
-    if($user instanceof Driver === false){
-        $newDriver = new Driver($user->getId());
+    if($user instanceof Admin === false){
+        exit(Response::UTE());
     }
     
+    $admin = new Admin($user->getId());
     unset($user);
+
 ?>

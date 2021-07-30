@@ -20,6 +20,12 @@ class Vehicle{
             REGISTRATION_PATH = "driver/vehicle/registrations",
             IREPORT_PATH = "driver/vehicle/inspection_reports";
 
+    const   VEHICLE_TABLE = "vehicle",
+            VEHICLE_ID = "`".Vehicle::VEHICLE_TABLE."`.`vehicle_id`",
+            VEHICLE_DOC_TABLE = "vehicle_document",
+            VEHICLE_DOC_ID = "`" .Vehicle::VEHICLE_DOC_TABLE. "`.`vehicleId`";
+
+
     public function __construct($driver_id = 0){
 
         if($driver_id == 0){
@@ -120,6 +126,20 @@ class Vehicle{
                 ->update(DbManager::VEHICLE_TABLE, $updateSqlStr, $values, DbManager::VEHICLE_ID . " = ?", [$this->id]);
     }
 
+    /**
+     * Can this vehicle be approved?
+     * @return bool
+     */
+    public function isApprovable(){
+        if(empty($this->id) ||
+           empty($this->registrationImage) ||
+           empty($this->inspReportImage) ||
+           empty($this->insuranceImage)){
+               return false;
+           }
+        
+        return true;
+    }
     /**
      * Get the value of id
      */ 

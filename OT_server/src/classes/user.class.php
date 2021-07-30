@@ -13,10 +13,13 @@
                 $id,
                 $emailVerified,
                 $type,
+                $accountStatus,
                 $evCode,
                 $profileImage,
                 $sessionId;
 
+        const   USER_TABLE = "user",
+                USER_ID = "`". User::USER_TABLE ."`.`id`";
 
         public function __construct($id = 0){
             if($id == 0){
@@ -47,6 +50,7 @@
                 $this->setType($userInfo["user_type"]);
                 $this->setProfileImage($userInfo["profile_image"]);
                 $this->setEvCode($userInfo["ev_code"]);
+                $this->setAccountStatus($userInfo["account_status"]);
                 return true;
             }
             return false;
@@ -107,8 +111,8 @@
             $this->password = password_hash($this->password, PASSWORD_DEFAULT);
      
             $tableName = "user";
-            $column_specs = ["email","user_type", "user_password","profile_image"];
-            $values = [$this->email,"rider", $this->password, User::DEFAULT_AVATAR];
+            $column_specs = ["email","user_type", "account_status" , "user_password","profile_image"];
+            $values = [$this->email,"rider", "enabled" , $this->password, User::DEFAULT_AVATAR];
 
             try{
                 $insertId = $dbManager->insert($tableName, $column_specs, $values);
@@ -357,6 +361,23 @@
         }
 
         /**
+         * Admin resets a password
+         */
+        public function adminResetPassword(){
+            $randomPass = bin2hex(openssl_random_pseudo_bytes(9));
+            $randomPass = password_hash($randomPass, PASSWORD_DEFAULT);
+
+            $dbManager = new DbManager();
+            return $dbManager->update(DbManager::USER_TABLE, "user_password = ?", [$randomPass], DbManager::USER_ID ."= ?", [$this->id]);
+        }
+
+        public function changeAccountStatus($status){
+            $this->accountStatus = $status;
+            $dbManager = new DbManager();
+            return $dbManager->update(DbManager::USER_TABLE, "account_status = ?", [$this->accountStatus], DbManager::USER_ID ." = ?", [$this->id]);
+        }
+
+        /**
          * Get the value of firstName
          */ 
         public function getFirstName()
@@ -572,6 +593,26 @@
         public function setSessionId($sessionId)
         {
                         $this->sessionId = $sessionId;
+
+                        return $this;
+        }
+
+        /**
+         * Get the value of accountStatus
+         */ 
+        public function getAccountStatus()
+        {
+                        return $this->accountStatus;
+        }
+
+        /**
+         * Set the value of accountStatus
+         *
+         * @return  self
+         */ 
+        public function setAccountStatus($accountStatus)
+        {
+                        $this->accountStatus = $accountStatus;
 
                         return $this;
         }

@@ -228,6 +228,26 @@ class DbManager implements DatabaseInterface{
 	}
 
 	
+
+    /**
+     * Get the value of dbConnection
+     */ 
+    public function getDbConnection()
+    {
+        return $this->dbConnection;
+    }
+
+    /**
+     * Set the value of dbConnection
+     *
+     * @return  self
+     */ 
+    public function setDbConnection($dbConnection)
+    {
+        $this->dbConnection = $dbConnection;
+
+        return $this;
+    }
 }
 
 ?>
