@@ -19,7 +19,7 @@
                 $sessionId;
 
         const   USER_TABLE = "user",
-                USER_ID = "`". User::USER_TABLE ."`.`id`";
+                USER_ID = "`user`.`id`";
 
         public function __construct($id = 0){
             if($id == 0){

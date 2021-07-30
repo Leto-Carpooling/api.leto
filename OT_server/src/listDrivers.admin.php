@@ -7,17 +7,17 @@
     $start = 0;
     $status = "pending";
 
-    if(isset($_POST['count'])){
-        $count = (int)$_POST['count'];
+    if(isset($_GET['count'])){
+        $count = (int)$_GET['count'];
     }
 
-    if(isset($_POST['start'])){
-        $start = (int)$_POST['start'];
+    if(isset($_GET['start'])){
+        $start = (int)$_GET['start'];
     }
 
-    if(isset($_POST['status']))
+    if(isset($_GET['status']))
     {
-        $s = filter_var($_POST['status'], FILTER_SANITIZE_STRING);
+        $s = filter_var($_GET['status'], FILTER_SANITIZE_STRING);
         switch($s){
             case "d": 
                 {
@@ -35,7 +35,8 @@
     $response = [];
 
     $dbManager = new DbManager();
-
+    $dbManager->connect();
+    
     //get vehicle information
     $sql = "SELECT * from ". Vehicle::VEHICLE_TABLE . " LIMIT $start, $count";
     $stmt1 = $dbManager->getDbConnection()->prepare($sql);

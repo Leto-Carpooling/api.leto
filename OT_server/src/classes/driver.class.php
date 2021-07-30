@@ -21,9 +21,9 @@
      * Database tables
      */
     const DRIVER_TABLE = "driver_information",
-          DRIVER_ID = "`". Driver::DRIVER_TABLE."`.`driverId`",
+          DRIVER_ID = "`driver_information`.`driverId`",
           DRIVER_DOC_TABLE = "driver_document",
-          DRIVER_DOC_ID = "`".Driver::DRIVER_DOC_ID."`.`driverId`";
+          DRIVER_DOC_ID = "`driver_document`.`driverId`";
 
     public function __construct($id = 0){
         parent::__construct($id);
@@ -41,7 +41,7 @@
         }
 
         $dbManager = new DbManager();
-        $driverInfo = $dbManager->query(DbManager::DRIVER_INFO_TABLE, ["*"], DbManager::DRIVER_INFO_ID + " = ?", [$id]);
+        $driverInfo = $dbManager->query(DbManager::DRIVER_INFO_TABLE, ["*"], DbManager::DRIVER_INFO_ID." = ?", [$id]);
 
         if($driverInfo === false){
             return false;
@@ -52,7 +52,7 @@
         $this->setApprovalStatus($driverInfo["approval_status"]);
         $this->setUpdated($driverInfo["updated_on"]);
 
-        $driverDoc = $dbManager->query(DbManager::DRIVER_DOC_TABLE, ["*"], DbManager::DRIVER_DOC_ID + " = ?", [$id]);
+        $driverDoc = $dbManager->query(DbManager::DRIVER_DOC_TABLE, ["*"], DbManager::DRIVER_DOC_ID . " = ?", [$id]);
 
         if($driverDoc === false){
             return false;
@@ -146,6 +146,15 @@
         }
 
         return $this->changeApprovalStatus("approved");
+        
+    }
+
+    public function pend(){
+        if(empty($this->id)){
+            return false;
+        }
+
+        return $this->changeApprovalStatus("pending");
         
     }
 

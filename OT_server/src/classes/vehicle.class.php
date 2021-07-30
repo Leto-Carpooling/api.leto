@@ -21,9 +21,9 @@ class Vehicle{
             IREPORT_PATH = "driver/vehicle/inspection_reports";
 
     const   VEHICLE_TABLE = "vehicle",
-            VEHICLE_ID = "`".Vehicle::VEHICLE_TABLE."`.`vehicle_id`",
+            VEHICLE_ID = "`vehicle`.`vehicle_id`",
             VEHICLE_DOC_TABLE = "vehicle_document",
-            VEHICLE_DOC_ID = "`" .Vehicle::VEHICLE_DOC_TABLE. "`.`vehicleId`";
+            VEHICLE_DOC_ID = "`vehicle_document`.`vehicleId`";
 
 
     public function __construct($driver_id = 0){

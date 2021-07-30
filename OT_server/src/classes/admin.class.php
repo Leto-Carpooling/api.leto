@@ -12,6 +12,12 @@ class Admin extends Driver{
         return $driver->isApprovable()?$driver->approve(): false;
     }
 
+    public function pendDriver($driver_id){
+        $driver = new Driver($driver_id);
+        
+        return $driver->pend();
+    }
+
     public function declineDriver($driver_id){
         $driver = new Driver($driver_id);
         return $driver->decline();
