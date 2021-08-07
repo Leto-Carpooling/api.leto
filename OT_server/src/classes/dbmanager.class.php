@@ -94,7 +94,8 @@ class DbManager implements DatabaseInterface{
 	public function query($table, $columns, $condition_string, $condition_values) {
 		$this->connect();
 		
-		$sql = "SELECT " . implode ($columns, ", ") ." from `$table` where $condition_string";
+		$sql = "SELECT " . implode (", ", $columns) ." from `$table` where $condition_string";
+		
             $stmt = $this->dbConnection->prepare($sql);
             if($stmt->execute($condition_values)){
                 $result = ($this->fetchAll)? $stmt->fetchAll() : $stmt->fetch();

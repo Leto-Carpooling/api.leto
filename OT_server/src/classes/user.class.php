@@ -145,7 +145,7 @@
                 $dbManager = new DbManager();
                 $details = $dbManager->query($tableName, $columns,"email = ?", $values);
                 
-                if($details){
+                if($details !== false){
                     $hashed_password = $details['user_password'];
                     $userId = $details['id'];
     
