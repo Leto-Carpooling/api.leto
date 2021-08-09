@@ -117,7 +117,7 @@
     }
 
 
-    if(!$dbManager->update("user", $updateSqlStr, $newValues, "id = ?", [$user->getId()])){
+    if(!(empty($updateSqlStr) || $dbManager->update("user", $updateSqlStr, $newValues, "id = ?", [$user->getId()]))){
         exit(Response::SQE());
     }
 
