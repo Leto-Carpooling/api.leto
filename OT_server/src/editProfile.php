@@ -17,6 +17,7 @@
 
     $updateSqlStr = "";
     $newValues = [];
+    $response = [];
 
     $firstName = $_POST["first-name"];
     $lastName = $_POST["last-name"];
@@ -46,7 +47,7 @@
     
    
     if(count($_FILES) > 0 && isset($_FILES['profile-image'])){
-        $prfileImage = $_FILES['profile-image'];
+        $profileImage = $_FILES['profile-image'];
         if(!Utility::isImage($profileImage['tmp_name'])){
             exit(Response::IIE());
         }
@@ -58,7 +59,7 @@
             $oldProfileImage = $user->getProfileImage();
         }
 
-        $newProfileImage = Utility::uploadImage($profileImage, $user->getId(), "profile_images", $updating, $oldProfileImage);
+        $newProfileImage = Utility::uploadImage($profileImage, $user->getId(), User::PROFILE_IMG_PATH, $updating, $oldProfileImage);
 
         if($newProfileImage !== false){
             if(count($newValues) > 0){
@@ -67,6 +68,7 @@
     
             $updateSqlStr .= "profile_image = ?";
             $newValues[] = $newProfileImage;
+
         }else{
             $message .= " An error occurred while uploading your profile picture. ";
         }

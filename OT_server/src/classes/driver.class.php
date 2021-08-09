@@ -12,10 +12,13 @@
             $updatedDocumentOn,
             $vehicle;
 
+            /**
+             * Image paths
+             */
     const NATIONALID_PATH = "driver/national_id_images",
           DLICENSE_PATH = "driver/licenses/regular",
           PSVLICENSE_PATH = "driver/psv",
-          GOODCONDUCT_PATH = "driver/";
+          GOODCONDUCT_PATH = "driver/good_conduct";
     
     /**
      * Database tables

@@ -121,13 +121,21 @@
                     User::sendConfirmationEmail($this->id, $this->email, $dbManager);
                     $sessionToken = bin2hex(openssl_random_pseudo_bytes(255));
                     $dbManager->insert("session", ["userId", "session_token"], [$this->id, $sessionToken]);
-                    return Response::makeResponse("OK", "$this->id-$sessionToken");
+                    //response
+                    $response = json_encode([
+                        "token" => "$this->id-$sessionToken",
+                        "firstname" => "",
+                        "lastname" => "",
+                        "profile_image" => User::DEFAULT_AVATAR
+                    ]);
+                    return Response::makeResponse("OK", $response);
                 }
             }
             catch(Exception $exception){}
             return Response::SQE();
         }
 
+        //login
         public function login(){
             if(!isset($this->email) || empty($this->email)){
                 return Response::NEE();
@@ -165,7 +173,7 @@
                                 "token" => "$userId-$sessionToken",
                                 "firstname" => $details["firstname"],
                                 "lastname" => $details["lastname"],
-                                "profile_image" => $details["profile_image"]
+                                "profile_image" => User::PROFILE_IMG_PATH."/". $details["profile_image"]
                             ]);
                         return Response::makeResponse("OK", $response);
                     }

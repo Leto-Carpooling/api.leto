@@ -96,11 +96,11 @@
             
                 // quality is a value from 0 (worst) to 100 (best)
                 $name = $save_name."-".uniqid().".jpeg";
-                if(imagejpeg($imageTmp, "../storage/$in_directory/$name", 70)){
+                if(imagejpeg($imageTmp, "./storage/$in_directory/$name", 70)){
                     imagedestroy($imageTmp);
 
                     if($update && $last_saved_as != ""){
-                        $oldImage = "../storage/$in_directory/$last_saved_as";
+                        $oldImage = "./storage/$in_directory/$last_saved_as";
                         if(file_exists($oldImage)){
                             unlink("$oldImage");
                         }  
