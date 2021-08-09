@@ -224,9 +224,7 @@ class DbManager implements DatabaseInterface{
 		return false;
 	}
 
-	public function getAffRowsCount(){
-		return $this->currentStatement->rowCount();
-	}
+	
 
 	
 
@@ -249,6 +247,14 @@ class DbManager implements DatabaseInterface{
 
         return $this;
     }
+
+	/**
+	 *
+	 * @return mixed
+	 */
+	public function getAffRowsCount(){
+		return $this->currentStatement->rowCount();
+	}
 }
 
 ?>

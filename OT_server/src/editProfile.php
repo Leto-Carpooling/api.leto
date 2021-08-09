@@ -43,8 +43,10 @@
         $newValues[] = $lastName;
     }
 
-    $prfileImage = $_FILES['profile-image'];
-    if(count($profileImage) > 0){
+    
+   
+    if(count($_FILES) > 0 && isset($_FILES['profile-image'])){
+        $prfileImage = $_FILES['profile-image'];
         if(!Utility::isImage($prfileImage['tmp_name'])){
             exit(Response::IIE());
         }
