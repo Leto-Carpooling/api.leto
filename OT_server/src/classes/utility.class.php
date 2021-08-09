@@ -68,6 +68,9 @@
            }
     
         
+            /**
+             * Uploads a images to the server
+             */
              public static function uploadImage(array $image, $save_name, $in_directory, $update = false, $last_saved_as = ""){
                 $ext = pathinfo($image['name'], PATHINFO_EXTENSION);
                 $ext = strtolower($ext);

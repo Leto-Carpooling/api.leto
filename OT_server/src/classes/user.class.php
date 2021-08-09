@@ -139,7 +139,7 @@
     
             try{
                 $tableName = "user";
-                $columns = ["id","email","user_password"];
+                $columns = ["id", "firstname", "lastname","email","user_password", "profile_image"];
                 $values = [$this->email];
                 
                 $dbManager = new DbManager();
@@ -159,7 +159,15 @@
                     if(
                         $dbManager->update("session", "session_token = ?", [$sessionToken], "userId = ?",[$this->id])
                         ){
-                        return Response::makeResponse("OK", "$userId-$sessionToken");
+                        
+                            //response
+                            $response = json_encode([
+                                "token" => "$userId-$sessionToken",
+                                "firstname" => $details["firstname"],
+                                "lastname" => $details["lastname"],
+                                "profile_image" => $details["profile_image"]
+                            ]);
+                        return Response::makeResponse("OK", $response);
                     }
 
                     return Response::SQE();

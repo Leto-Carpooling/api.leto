@@ -26,7 +26,7 @@
             exit(Response::UNE());
         }
 
-        $updateSqlStr = "firstname = ?";
+        $updateSqlStr .= "firstname = ?";
         $newValues[] = $firstName;
     }
 
@@ -39,7 +39,7 @@
             $updateSqlStr .= ", ";
         }
 
-        $updateSqlStr = "lastname = ?";
+        $updateSqlStr .= "lastname = ?";
         $newValues[] = $lastName;
     }
 
@@ -47,7 +47,7 @@
    
     if(count($_FILES) > 0 && isset($_FILES['profile-image'])){
         $prfileImage = $_FILES['profile-image'];
-        if(!Utility::isImage($prfileImage['tmp_name'])){
+        if(!Utility::isImage($profileImage['tmp_name'])){
             exit(Response::IIE());
         }
 
@@ -65,7 +65,7 @@
                 $updateSqlStr .= ", ";
             }
     
-            $updateSqlStr = "profile_image = ?";
+            $updateSqlStr .= "profile_image = ?";
             $newValues[] = $newProfileImage;
         }else{
             $message .= " An error occurred while uploading your profile picture. ";

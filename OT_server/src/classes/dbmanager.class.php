@@ -198,6 +198,7 @@ class DbManager implements DatabaseInterface{
 		$this->connect();
 
 		$sql = "UPDATE `$table` set $columns_string where $condition_string";
+		
             $stmt = $this->dbConnection->prepare($sql);
 			$this->currentStatement = $stmt;
 			$combinedValues = array_merge($values, $condition_values);
