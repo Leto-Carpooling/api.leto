@@ -1,5 +1,5 @@
 <?php
-    require(__DIR__."/passwords.inc.php");
+    require_once(__DIR__."/passwords.inc.php");
     use Twilio\Rest\Client;
 
     

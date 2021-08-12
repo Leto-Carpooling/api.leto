@@ -1,5 +1,5 @@
 <?php
-require(__DIR__."/passwords.inc.php");
+require_once(__DIR__."/passwords.inc.php");
 use PHPMailer\PHPMailer\PHPMailer;
 
 date_default_timezone_set('Etc/UTC');
