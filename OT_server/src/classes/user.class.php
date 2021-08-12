@@ -149,7 +149,7 @@
     
             try{
                 $tableName = "user";
-                $columns = ["id", "firstname", "lastname","email","user_password", "profile_image"];
+                $columns = ["id", "firstname", "lastname","email", "phone","user_password", "profile_image"];
                 $values = [$this->email];
                 
                 $dbManager = new DbManager();
