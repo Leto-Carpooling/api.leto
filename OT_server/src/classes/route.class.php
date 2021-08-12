@@ -44,6 +44,13 @@
         }
 
         /**
+         * Returns the steps array in a route
+         * @return array
+         */
+        public function getSteps(){
+            return $this->getLegs()->steps;
+        }
+        /**
          * Returns the start latitude of the route
          * @return double
          */
@@ -74,6 +81,16 @@
         public function getEndLng(){
             return $this->getLegs()->end_location->lng;
         }
+
+        /**
+         * @param int $index
+         * The leg point at 
+         * @return object
+         */
+        public function getStepAt(int $index){
+            return $this->getSteps()[$index];
+        }
+
     }
 
 ?>

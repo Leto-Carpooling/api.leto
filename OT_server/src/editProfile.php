@@ -124,7 +124,7 @@
 
     $user->refresh();
     $response = json_encode([
-        "token" => "$user->getId()-$sessionToken",
+        "token" => "$userId-$sessionToken",
         "firstname" => $user->getFirstName(),
         "lastname" => $user->getLastName(),
         "phone" => $user->getPhone(),
