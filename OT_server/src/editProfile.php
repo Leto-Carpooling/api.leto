@@ -7,6 +7,8 @@
      */
     
     require("master.inc.php");
+    require("includes/phpmailer.inc.php");
+    require("includes/sms.inc.php");
 
     if(!$isLoggedIn){exit(Response::NLIE());}
 
@@ -124,6 +126,7 @@
 
     $user->refresh();
     $response = json_encode([
+        "token" => "$userId-$token",
         "firstname" => $user->getFirstName(),
         "lastname" => $user->getLastName(),
         "phone" => $user->getPhone(),
