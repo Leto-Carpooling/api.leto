@@ -128,7 +128,8 @@
                         "lastname" => "",
                         "phone" => "",
                         "email"=>$this->email,
-                        "profileImage" => User::DEFAULT_AVATAR
+                        "profileImage" => User::DEFAULT_AVATAR,
+                        "message" => "Successfully signed up"
                     ]);
                     return Response::makeResponse("OK", $response);
                 }
@@ -177,7 +178,8 @@
                                 "lastname" => $details["lastname"],
                                 "phone" => $details["phone"],
                                 "email" => $details["email"],
-                                "profileImage" => User::PROFILE_IMG_PATH."/". $details["profile_image"]
+                                "profileImage" => User::PROFILE_IMG_PATH."/". $details["profile_image"],
+                                "message" => "Successfully logged in"
                             ]);
                         return Response::makeResponse("OK", $response);
                     }
@@ -397,6 +399,12 @@
             return $dbManager->update(DbManager::USER_TABLE, "account_status = ?", [$this->accountStatus], DbManager::USER_ID ." = ?", [$this->id]);
         }
 
+        /**
+         * Gets the updated user details from the database
+         */
+        public function refresh(){
+            $this->loadUser($this->id);
+        }
         /**
          * Get the value of firstName
          */ 
