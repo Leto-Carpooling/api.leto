@@ -17,7 +17,6 @@
 
     $updateSqlStr = "";
     $newValues = [];
-    $response = [];
 
     $firstName = $_POST["first-name"];
     $lastName = $_POST["last-name"];
@@ -123,7 +122,17 @@
         exit(Response::SQE());
     }
 
-    exit(Response::makeResponse("OK", "Profile updated successfully. Note: $message"));
+    $user->refresh();
+    $response = json_encode([
+        "token" => "$user->getId()-$sessionToken",
+        "firstname" => $user->getFirstName(),
+        "lastname" => $user->getLastName(),
+        "phone" => $user->getPhone(),
+        "email" => $user->getEmail(),
+        "profileImage" => User::PROFILE_IMG_PATH."/". $user->getProfileImage(),
+        "message" => $message
+    ]);
+    exit(Response::makeResponse("OK", $response));
 
     
 

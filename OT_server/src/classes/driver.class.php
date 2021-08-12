@@ -177,6 +177,14 @@
         $dbManager = new DbManager();
         return $dbManager->update(DbManager::DRIVER_INFO_TABLE, "approval_status = ? ", [$status], DbManager::DRIVER_INFO_ID . "= ?", [$this->id]);
     }
+
+    /**
+     * loads the updated driver information from the database;
+     */
+    public function refresh(){
+        $this->loadDriver($this->id);
+    }
+
     /**
      * Get the value of nationalId
     */ 

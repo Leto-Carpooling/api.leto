@@ -140,6 +140,15 @@ class Vehicle{
         
         return true;
     }
+
+
+    /**
+     * Loads new vehicle information from the database.
+     */
+    public function refresh(){
+        $this->loadVehicle($this->id);
+    }
+    
     /**
      * Get the value of id
      */ 
