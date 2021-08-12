@@ -126,7 +126,9 @@
                         "token" => "$this->id-$sessionToken",
                         "firstname" => "",
                         "lastname" => "",
-                        "profile_image" => User::DEFAULT_AVATAR
+                        "phone" => "",
+                        "email"=>$this->email,
+                        "profileImage" => User::DEFAULT_AVATAR
                     ]);
                     return Response::makeResponse("OK", $response);
                 }
@@ -173,7 +175,9 @@
                                 "token" => "$userId-$sessionToken",
                                 "firstname" => $details["firstname"],
                                 "lastname" => $details["lastname"],
-                                "profile_image" => User::PROFILE_IMG_PATH."/". $details["profile_image"]
+                                "phone" => $details["phone"],
+                                "email" => $details["email"],
+                                "profileImage" => User::PROFILE_IMG_PATH."/". $details["profile_image"]
                             ]);
                         return Response::makeResponse("OK", $response);
                     }

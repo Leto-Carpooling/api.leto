@@ -216,6 +216,8 @@ class DbManager implements DatabaseInterface{
 	 * @return bool
 	 */
 	public function delete($table, $condition_string, $condition_values) {
+		$this->connect();
+		
 		$sql = "DELETE from `$table` where $condition_string";
 		$stmt = $this->dbConnection->prepare($sql);
 		$this->currentStatement = $stmt;
