@@ -44,7 +44,7 @@ class Vehicle{
             return false;
         }
 
-        $this->setId($vInfo[DbManager::VEHICLE_ID]);
+        $this->setId($vInfo["vehicle_id"]);
         $this->setManufacturer($vInfo["manufacturer"]);
         $this->setModel($vInfo["model"]);
         $this->setCapacity($vInfo["capacity"]);
@@ -52,7 +52,7 @@ class Vehicle{
         $this->setColor($vInfo["vehicle_color"]);
         $this->setUpdatedOn($vInfo["updated_on"]);
 
-        $vDoc = $dbManager->query(DbManager::VEHICLE_DOC_TABLE, ["*"], DbManager::DRIVER_DOC_ID. " = ?", [$this->id]);
+        $vDoc = $dbManager->query(DbManager::VEHICLE_DOC_TABLE, ["*"], "driverId = ?", [$this->id]);
 
         if($vDoc === false){
             return false;
