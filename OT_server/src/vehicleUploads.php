@@ -18,7 +18,7 @@
     }
 
     if(isset($_FILES['v-ins-image'])){
-        $insuranceImage = $_FILES['v-ins-image'];
+        $insuranceImage = $_FILES['v-ins-image']; //insurance report image
 
         $lastSavedAs = "";
         $update = false;
@@ -43,7 +43,7 @@
         
     }
 
-    if(isset($_FILES['v-reg-image'])){
+    if(isset($_FILES['v-reg-image'])){  //vehicle registration
         $regImage = $_FILES['v-reg-image'];
 
         $lastSavedAs = "";
@@ -69,7 +69,7 @@
         
     }
 
-    if(isset($_FILES['v-ir-image'])){
+    if(isset($_FILES['v-ir-image'])){ //vehicle inspection report image
         $inspReportImage = $_FILES['v-ir-image'];
 
         $lastSavedAs = "";
