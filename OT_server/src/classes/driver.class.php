@@ -1,7 +1,7 @@
 <?php
 
  class Driver extends User{
-    private $nationalId,
+    protected $nationalId,
             $regLicense,
             $nationalIdImage = "pending",
             $regLicenseImage = "pending",
@@ -91,7 +91,7 @@
     /**
      * Adds a new driver
      */
-    private function addDriver(){
+    protected function addDriver(){
         $dbManager = new DbManager();
         if($dbManager->insert(DbManager::DRIVER_INFO_TABLE, 
         [DbManager::DRIVER_INFO_ID, "national_id", "regular_license", "approval_status"], 
@@ -169,7 +169,7 @@
         return $this->changeApprovalStatus("declined");
     }
 
-    private function changeApprovalStatus($status){
+    protected function changeApprovalStatus($status){
         if(!in_array($status, ["declined", "pending", "approved"])){
             $status = "pending";
         }

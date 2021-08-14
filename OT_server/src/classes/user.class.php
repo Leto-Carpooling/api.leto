@@ -5,7 +5,7 @@
     class User implements UserInterface{
         use UserTrait;
 
-        private $firstName,
+        protected $firstName,
                 $lastName,
                 $email,
                 $phone,

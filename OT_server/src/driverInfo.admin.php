@@ -11,13 +11,13 @@
     $driver = new Driver($driverId);
 
     $response = [
-        "national_id" => "storage/". Driver::NATIONALID_PATH . "/".  $driver->getNationalIdImage(),
-        "driving_license" => "storage/". Driver::DLICENSE_PATH . "/". $driver->getRegLicenseImage(),
-        "psv_license" => "storage/". Driver::PSVLICENSE_PATH ."/". $driver->getPsvLicenseImage(),
-        "good_cond_cert" => "storage/". Driver::GOODCONDUCT_PATH ."/". $driver->getGoodConductCertImage(),
-        "vehicle_insurance" => "storage/". Vehicle::INSURANCE_PATH. "/". $driver->getVehicle()->getInsuranceImage(),
-        "vehicle_registration" => "storage/". Vehicle::REGISTRATION_PATH. "/". $driver->getVehicle()->getRegistrationImage(),
-        "vehicle_inspection" => "storage/".Vehicle::IREPORT_PATH ."/". $driver->getVehicle()->getInspReportImage()
+        "nationalId" => "storage/". Driver::NATIONALID_PATH . "/".  $driver->getNationalIdImage(),
+        "drivingLicense" => "storage/". Driver::DLICENSE_PATH . "/". $driver->getRegLicenseImage(),
+        "psvLicense" => "storage/". Driver::PSVLICENSE_PATH ."/". $driver->getPsvLicenseImage(),
+        "goodCondCert" => "storage/". Driver::GOODCONDUCT_PATH ."/". $driver->getGoodConductCertImage(),
+        "vehicleInsurance" => "storage/". Vehicle::INSURANCE_PATH. "/". $driver->getVehicle()->getInsuranceImage(),
+        "vehicleRegistration" => "storage/". Vehicle::REGISTRATION_PATH. "/". $driver->getVehicle()->getRegistrationImage(),
+        "vehicleInspection" => "storage/".Vehicle::IREPORT_PATH ."/". $driver->getVehicle()->getInspReportImage()
     ];
 
     exit(
