@@ -2,7 +2,7 @@
     require("master.inc.php");
     require(__DIR__."/includes/initDriver.inc.php");
 
-    $uploadSqlString = "";
+    $uploadSqlStr = "";
     $values = [];
 
     function updateSqlStr(){
