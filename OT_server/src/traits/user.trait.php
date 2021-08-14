@@ -60,7 +60,7 @@
          
             $code = Utility::make6digitCode();
 
-            if($dbManager->update("temporary_phone_number", "pv_code = ?", [$code], "id = ?", [$id])){
+            if($dbManager->update("temporary_phone_number", "pv_code = ?", [$code], "userId = ?", [$id])){
                 $msg = "Leto - your verification code is $code";
                 return sendSms($phone, $msg);
             }

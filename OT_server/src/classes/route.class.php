@@ -4,6 +4,9 @@
      * Route class to represent the routes a client is traversing
      */
     class Route{
+        const MAX_RADIUS = 200; //200 meters near each other
+        
+        public $id;
         /**
          * The route object returned by the directions API
          */
@@ -16,7 +19,7 @@
         /**
          * Checks if this route intersects another route
          */
-        public function intersects(Route $route){
+        public function isCloserTo(Route $route){
 
         }
 
