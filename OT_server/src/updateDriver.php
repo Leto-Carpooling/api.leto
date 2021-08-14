@@ -32,6 +32,7 @@
         $vehicle->setModel($_POST["model"]);
         $vehicle->setCapacity($_POST['capacity']);
         $vehicle->setColor($_POST["color"]);
+        $vehicle->setLicenseNumber($_POST["license-num"]);
 
         exit($vehicle->save());
     }
