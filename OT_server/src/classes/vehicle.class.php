@@ -52,7 +52,7 @@ class Vehicle{
         $this->setColor($vInfo["vehicle_color"]);
         $this->setUpdatedOn($vInfo["updated_on"]);
 
-        $vDoc = $dbManager->query(DbManager::VEHICLE_DOC_TABLE, ["*"], "driverId = ?", [$this->id]);
+        $vDoc = $dbManager->query(DbManager::VEHICLE_DOC_TABLE, ["*"], "vehicleId = ?", [$this->id]);
 
         if($vDoc === false){
             return false;
