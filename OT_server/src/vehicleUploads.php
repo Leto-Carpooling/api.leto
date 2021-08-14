@@ -3,7 +3,7 @@
     require("master.inc.php");
     require(__DIR__."/includes/initDriver.inc.php");
 
-    $uploadSqlStr= "";
+    $updateSqlStr= "";
     $values = [];
 
     function updateSqlStr(){
