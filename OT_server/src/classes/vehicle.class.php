@@ -89,7 +89,7 @@ class Vehicle{
 
         $updateStr = "manufacturer = ?, model = ?, license_plate = ?, vehicle_color = ?, capacity = ?";
         if((empty($this->id) && !$this->addVehicle()) ||
-            !$this->updateVehicle($updateStr, [$this->manufacturer, $this->model, $this->color, $this->capacity])){
+            !$this->updateVehicle($updateStr, [$this->manufacturer, $this->model, $this->licenseNumber, $this->color, $this->capacity])){
             return Response::SQE();
         }
 
