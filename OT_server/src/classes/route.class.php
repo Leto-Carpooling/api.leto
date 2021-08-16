@@ -31,7 +31,7 @@
         }
 
         /**
-         * Returns the total distance from the origin to the destination
+         * Returns the total distance from the origin to the destination in meters
          * @return int
          */
         public function getTotalDistance(){
@@ -99,6 +99,10 @@
          */
         public function getStepAt(int $index){
             return $this->getSteps()[$index];
+        }
+
+        public function __toString(){
+            return json_encode($this);
         }
         
     }
