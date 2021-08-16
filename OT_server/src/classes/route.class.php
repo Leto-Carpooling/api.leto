@@ -5,7 +5,14 @@
      */
     class Route{
         const MAX_RADIUS = 200; //200 meters near each other
-        
+
+        /**
+         * Points to the current step in the route
+         */
+        public $pointer = 0;
+        /**
+         * Id of the route
+         */
         public $id;
         /**
          * The route object returned by the directions API
@@ -93,7 +100,6 @@
         public function getStepAt(int $index){
             return $this->getSteps()[$index];
         }
-
         
     }
 

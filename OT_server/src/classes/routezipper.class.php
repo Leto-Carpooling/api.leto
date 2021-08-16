@@ -7,7 +7,22 @@
      */
 
      class RouteZipper{
-         
+         public function __construct(){
+
+         }
+
+         /**
+          * Zips the routes and return the zipped route object
+          * Complexity O(n2)
+          */
+         public function zipRoute(Route $route, array $routes){
+            $zippedRoute = new ZippedRoute();
+
+            //put the first route in the array
+            $zippedRoute->startLocations[] = $route->getStepAt(0);
+
+            //if a route more than 200 meters away from the start point
+         }
      }
 
 ?>

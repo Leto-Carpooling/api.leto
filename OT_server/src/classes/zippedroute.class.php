@@ -19,6 +19,11 @@
       public $maxEndDist = 0;
 
       /**
+       * The ids of the routes included in the zipped route
+       */
+      
+      public $routeIds = [];
+      /**
        * zipped route object
        */
       public $routeObject;

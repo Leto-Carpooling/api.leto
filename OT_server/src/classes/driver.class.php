@@ -15,7 +15,7 @@
             /**
              * Image paths
              */
-    const NATIONALID_PATH = "driver/national_id_images",
+    const NATIONALID_PATH = "driver/national_ids/national_id_images",
           DLICENSE_PATH = "driver/licenses/regular",
           PSVLICENSE_PATH = "driver/psv",
           GOODCONDUCT_PATH = "driver/good_conduct";
