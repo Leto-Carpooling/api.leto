@@ -9,6 +9,11 @@
      class RouteZipper{
          const LAT_TO_METER = 111200;
          const LNG_TO_METER = 111000;
+         /**
+          * The relative axis lenght
+          * The relative axis here is the x-axis beginning from the origin
+          */
+         const REL_AXIS_LENGTH = 10;
 
 
          const ROUTE_START = 'start', ROUTE_END = 'end';
@@ -19,19 +24,32 @@
 
          /**
           * Zips the routes and return the zipped route object
-          * Complexity O(n2)
+          * 
           */
-         public function zipRoute(Route $route, array $routes){
-            $zippedRoute = new ZippedRoute();
+         public function zipRoute(array $routes){
 
-            //put the first route in the array
-            //$route = $routes[0];
-            $zippedRoute->startLocations[] = $route->getStepAt(0);
+            $tree = new BinaryTree();
 
-            //put the route into the binary tree
-            //the the start route is the start node
+            foreach($routes as $route){
+                $x1 = $route->getStartLng();
+                $y1 = $route->getStartLat();
+                $x2 = RouteZipper::REL_AXIS_LENGTH;
+                $y2 = 0;
 
-            
+                $theta = acos(
+                    (
+                        $x1 * $x2 + $y1 * $y2
+                    )
+                    /
+                    (
+                        $this->magnitude([0, 0], [$x1, $y1]) * $this->magnitude([0, 0], [$y2, $x2])
+                    )
+                );
+
+                $tree->push($route, $theta);
+            }
+
+            //get the routes out
 
          }
 
@@ -82,10 +100,18 @@
                     }
             }
             
-            return sqrt(
-                ($x2 - $x1)**2 - ($y2 - $y1)**2
-            );
+            return $this->magnitude([$x1, $y1], [$x2, $y2]);
             
+         }
+
+         /**
+          * @param array $pair1 - [x1, y1]
+          * @param array $pair2 - [x2, y2]
+          */
+         public function magnitude(array $pair1, array $pair2){
+             return sqrt(
+                ($pair2[0] - $pair1[0]) ** 2 + ($pair2[1] - $pair1[1])**2
+             );
          }
      }
 

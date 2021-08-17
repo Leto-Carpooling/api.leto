@@ -189,6 +189,17 @@
                 return $code;
             }
 
+           /**
+            * Gets the distance between two points
+            * @param array $pair1 - [x1, y1]
+            * @param array $pair2 - [x2, y2]
+            */
+           public static function magnitude(array $pair1, array $pair2){
+               return sqrt(
+                  ($pair2[0] - $pair1[0]) ** 2 + ($pair2[1] - $pair1[1])**2
+               );
+           }
+
     }
 
 ?>

@@ -36,7 +36,7 @@
      * @param object &$object - passed by reference
      * @param mixed $compareBy - the value or object to sort the objects by
      */
-    public function __construct(&$object, $theta) {
+    public function __construct($object, $theta) {
            $this->object = $object;
            $this->theta = $theta;
 

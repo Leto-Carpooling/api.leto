@@ -17,7 +17,7 @@ class BinaryTree {
            $this->root = NULL;
     }
 
-    public function push($route, $compareBy) {
+    public function push(&$route, $compareBy) {
         
            if($this->root == NULL) {
 
@@ -97,13 +97,13 @@ class BinaryTree {
         return $this->traverse(BinaryTree::IN_ORDER);
     }
 
-    private function _inorder(RouteNode $node) {
+    private function _inorder(RouteNode &$node) {
 
                     if($node->left) {
                        $this->_inorder($node->left); 
                     } 
 
-                    $this->array[] = $node->object;
+                    $this->array[] = $node;
 
                     if($node->right) {
                        $this->_inorder($node->right); 
@@ -111,9 +111,9 @@ class BinaryTree {
     }
 
 
-    private function _preorder(RouteNode $node) {
+    private function _preorder(RouteNode &$node) {
 
-                    $this->array[] = $node->object;
+                    $this->array[] = $node;
 
                     if($node->left) {
                        $this->_preorder($node->left); 
@@ -126,7 +126,7 @@ class BinaryTree {
     }
 
 
-    private function _postorder(RouteNode $node) {
+    private function _postorder(RouteNode &$node) {
 
 
                     if($node->left) {
@@ -138,7 +138,7 @@ class BinaryTree {
                        $this->_postorder($node->right); 
                     } 
 
-                    $this->array[] = $node->object;
+                    $this->array[] = $node;
     }
 
 
