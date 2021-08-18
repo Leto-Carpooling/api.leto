@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
        header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
 
 }
-require(__DIR__."/vendor/autoload.php");
+require(__DIR__."/../vendor/autoload.php");
 /** 
  * Include classes as needed and interfaces as needed
  */
