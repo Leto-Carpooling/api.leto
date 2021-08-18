@@ -29,7 +29,6 @@ class BinaryTree {
               $newNode = new RouteNode($route, $compareBy);
 
               while(true) {
-                    $newNode->isCloser($current);
                     $current->isCloser($newNode);
 
                     if($compareBy <= $current->compareBy) {

@@ -4,7 +4,7 @@
      * Route class to represent the routes a client is traversing
      */
     class Route{
-        const MAX_RADIUS = 200; //200 meters near each other
+        const MAX_RADIUS = 400; //200 meters near each other
 
         /**
          * Points to the current step in the route

@@ -4,10 +4,7 @@
   */
 
   class ZippedRoute{
-      /**
-       * Array of start locations and end locations
-       */
-      public $startLocations = $endLocations = [];
+      
       /**
        * Maximum distance from the intersection of one of the start locations
        */
@@ -23,10 +20,7 @@
        */
       
       public $routeIds = [];
-      /**
-       * zipped route object
-       */
-      public $routeObject;
+      
 
       public function __construct(){
         

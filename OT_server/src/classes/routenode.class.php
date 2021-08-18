@@ -6,10 +6,10 @@
 
   class RouteNode {
 
-       /**
-        * The route object represented by this route node
-        * @property Route $route
-        */
+    /**
+     * The route object represented by this route node
+     * @property Route $route
+     */
     public $route;
     /**
      * The angle between the startpoint of the route and the x-axis in radians
@@ -51,18 +51,14 @@
      * Checks if this node is closer to another node
      */
     public function isCloser(RouteNode &$node){
-       $relAngle = abs($node->theta - $this->theta);
+      
+       $x1 = $node->route->getStartLng();
+       $y1 = $node->route->getStartLat();
 
-       /**
-        * Using the cosine rule
-        * c2 = sqrt(a2 + b2 - 2abCosC)
-        */
-        $a = $node->route->getTotalDistance();
-        $b = $this->route->getTotalDistance();
-
-       $distance = sqrt(
-              $a * $a + $b * $b - 2 * $a * $b * cos($relAngle)
-       );
+       $x2 = $this->route->getStartLng();
+       $y2 = $this->route->getStartLat();
+        
+       $distance = Utility::magnitude([$x1, $y1], [$y2, $x2]);
 
        if($this->leastDistance < 0){
               $this->leastDistance = $distance;

@@ -200,6 +200,16 @@
                );
            }
 
+           /**
+            * Finds distance of c using the cosine rule
+            * `c2 = a2 + b2 - 2ab*cosC`
+            */
+           public static function distFromCosRule($a, $b, $theta){
+            return sqrt(
+                   $a * $a + $b * $b - 2 * $a * $b * cos($theta)
+            );
+          }
+
     }
 
 ?>

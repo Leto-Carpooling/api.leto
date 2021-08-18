@@ -2,14 +2,14 @@
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type");
 
-require(__DIR__."/../vendor/autoload.php");
+require(__DIR__."./../../vendor/autoload.php");
 /** 
  * Include classes as needed and interfaces as needed
  */
 
 spl_autoload_register(function($name){
    $classname = strtolower($name);
-   $filename = __DIR__. "/classes/$classname.class.php";
+   $filename = __DIR__. "./../classes/$classname.class.php";
    if(file_exists($filename)){
       include($filename);
    }
