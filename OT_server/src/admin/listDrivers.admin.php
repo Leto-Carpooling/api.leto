@@ -1,7 +1,6 @@
 <?php
 
     require("master.inc.php");
-    require( __DIR__ ."/includes/initAdmin.inc.php");
 
     $count = 10;
     $start = 0;

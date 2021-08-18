@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * This file must only be called by the children master.inc.php in each folder
+ */
+
 if (isset($_SERVER['HTTP_ORIGIN'])) {
    // Decide if the origin in $_SERVER['HTTP_ORIGIN'] is one
    // you want to allow, and if so:
@@ -26,7 +30,7 @@ require(__DIR__."/../vendor/autoload.php");
 
 spl_autoload_register(function($name){
    $classname = strtolower($name);
-   $filename = __DIR__. "/classes/$classname.class.php";
+   $filename = __DIR__. "/../classes/$classname.class.php";
    if(file_exists($filename)){
       include($filename);
    }
