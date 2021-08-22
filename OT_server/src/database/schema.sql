@@ -1,4 +1,10 @@
 
+DROP database if exists leto_db;
+
+CREATE Database leto_db;
+
+use leto_db;
+
 CREATE TABLE `user` (
   `id` bigint unsigned not null primary key auto_increment,
   `firstname` varchar(255) ,
