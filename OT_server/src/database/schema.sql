@@ -1,3 +1,4 @@
+
 CREATE TABLE `user` (
   `id` bigint unsigned not null primary key auto_increment,
   `firstname` varchar(255) ,
@@ -54,6 +55,7 @@ CREATE TABLE `temporary_email` (
 CREATE TABLE `driver_information` (
   `driverId` bigint unsigned not null primary key,
   `national_id` varchar(100) not null,
+  `driver_state` TINYINT UNSIGNED not null DEFAULT 0,
   `regular_license` varchar(100) not null,
   `approval_status` enum("declined", "pending", "approved") not null,
   `created_on` datetime default current_timestamp,
@@ -96,8 +98,42 @@ CREATE TABLE `vehicle_document` (
 );
 
 
+CREATE TABLE `completed_route` (
+  `id` bigint unsigned not null primary key,
+  `riderId` bigint unsigned not null,
+  `completed_on` datetime default current_timestamp,
+  FOREIGN KEY (`riderId`) REFERENCES `user`(`id`)
+);
 
 
+CREATE TABLE `active_route` (
+  `id` bigint unsigned not null primary key auto_increment,
+  `riderId` bigint unsigned not null,
+  `created_on` datetime default current_timestamp,
+  `updated_on` datetime default current_timestamp on update current_timestamp,
+  FOREIGN KEY (`riderId`) REFERENCES `user`(`id`)  
+);
 
+CREATE TABLE `ride_group` (
+  `id` bigint unsigned not null primary key auto_increment,
+  `driverId` bigint unsigned,
+  `created_on` datetime default current_timestamp,
+  `updated_on` datetime default current_timestamp on update current_timestamp  ,
+  FOREIGN KEY (`driverId`) REFERENCES `driver_information`(`driverId`)
+);
 
+CREATE TABLE `ride` (
+  `id` bigint unsigned not null primary key auto_increment,
+  `routeId` bigint unsigned not null,
+  `created_on` datetime default current_timestamp,
+  `updated_on` datetime default current_timestamp on update current_timestamp  
+);
 
+CREATE TABLE `rider_grouping` (
+  `id` bigint unsigned not null primary key auto_increment,
+  `groupId` bigint unsigned not null,
+  `rideId` bigint unsigned not null,
+  `created_on` datetime default current_timestamp,
+  FOREIGN KEY (`groupId`) REFERENCES `ride_group`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`rideId`) REFERENCES `ride`(`id`) ON DELETE CASCADE
+);

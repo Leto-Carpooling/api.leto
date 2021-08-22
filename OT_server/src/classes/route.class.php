@@ -105,6 +105,14 @@
             return json_encode($this);
         }
         
+        /**
+         * This function fetches a route json from the firebase realtime
+         * database and returns the json string.
+         * @param string $routeId - routeId in the firebase realtime database
+         */
+        public static function fetchRoute($routeId){
+            return "json_route";
+        }
     }
 
 ?>
