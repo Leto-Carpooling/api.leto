@@ -6,6 +6,14 @@
     class Route{
         const MAX_RADIUS = 400; //200 meters near each other
 
+       /**
+        * database tables
+        */
+        const   A_ROUTE = "`active_route`",
+                A_ROUTE_ID = "`active_route`.`id`",
+                C_ROUTE = "`completed_route`",
+                C_ROUTE_ID = "`completed_route`.`id`";
+
         /**
          * Points to the current step in the route
          */
@@ -49,22 +57,23 @@
          * Returns the legs of the route from the directions api
          * @return object
          */
-        public function getLegs(){
-            return $this->routeObject->routes[0]->legs[0];
+        public function getLegs($index = 0){
+            return $this->routeObject->routes[0]->legs[$index];
         }
 
         /**
          * Returns the steps array in a route
          * @return array
          */
-        public function getSteps(){
-            return $this->getLegs()->steps;
+        public function getSteps($legsIndex = 0){
+            return $this->getLegs($legsIndex)->steps;
         }
         /**
          * Returns the start latitude of the route
          * @return double
          */
         public function getStartLat(){
+            
             return $this->getLegs()->start_location->lat;
         }
 
@@ -81,7 +90,11 @@
          * @return double
          */
         public function getEndLat(){
-            return $this->getLegs()->end_location->lat;
+            $endIndex = count($this->routeObject->routes[0]->legs);
+            if($endIndex > 0){
+                $endIndex -= 1;
+            }
+            return $this->getLegs($endIndex)->end_location->lat;
         }
 
         /**
@@ -89,7 +102,11 @@
          * @return double
          */
         public function getEndLng(){
-            return $this->getLegs()->end_location->lng;
+            $endIndex = count($this->routeObject->routes[0]->legs);
+            if($endIndex > 0){
+                $endIndex -= 1;
+            }
+            return $this->getLegs($endIndex)->end_location->lng;
         }
 
         /**

@@ -59,5 +59,7 @@ spl_autoload_register(function($name){
       $sessionId = $result["session_id"];
       $isLoggedIn = true;
    }
+
+   $dbManager->close();
  }
 ?>
