@@ -142,13 +142,11 @@ class DbManager implements DatabaseInterface{
 
 	public function makeDatabase($sql){
 		$this->connect();
-		$statement = $this->dbConnection->prepare($sql);
-		if($statement->execute()){
+
+		if($this->dbConnection->exec($sql)){
 			return true;
 		}
-		else{
-			return false;
-		}
+		return false;
 	}
 	
 	/**
