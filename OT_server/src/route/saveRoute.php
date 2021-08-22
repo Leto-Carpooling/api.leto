@@ -12,8 +12,16 @@
  $dbManager = new DbManager();
 
  //delete any active route with this rider id
+ 
+ $deletedRouteId = $dbManager->query(Route::A_ROUTE, [Route::A_ROUTE_ID], "riderId = ?", [$userId]);
 
- $dbManager->delete(Route::A_ROUTE, "riderId = ?", [$userId]);
+ if($deletedRouteId !== false){
+     $deletedRouteId = $deletedRouteId["id"];
+     $dbManager->delete(Route::A_ROUTE, "riderId = ?", [$userId]);
+ }
+ else{
+     $deletedRouteId = 0;
+ }
 
  $routeId = $dbManager->insert(Route::A_ROUTE, ["riderId"], [$userId]);
 
@@ -27,6 +35,7 @@
        json_encode(
            [
                "routeId" => $routeId,
+               "deletedRouteId" => $deletedRouteId,
                "userId" => $userId,
                "message" => "successfully added the new route"
            ]
