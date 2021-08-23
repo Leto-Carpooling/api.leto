@@ -1,7 +1,7 @@
 <?php
     require("master.inc.php");
 
-    $driverId = (isset($_GET['id']))?(int)$_GET['id']: 0;
+    $driverId = (isset($_POST['id']))?(int)$_POST['id']: 0;
 
     if($driverId == 0){
         exit(Response::NIE());
