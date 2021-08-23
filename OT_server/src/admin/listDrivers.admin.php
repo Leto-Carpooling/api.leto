@@ -45,10 +45,10 @@
     $stmt2 = $dbManager->getDbConnection()->prepare($sql);
 
     //get number of uploaded document
-    $sql = "SELECT * from ". Vehicle::VEHICLE_DOC_TABLE. " WHERE ". Vehicle::VEHICLE_DOC_ID. "= ?";
+    $sql = "SELECT `v_insurance_image`, `v_registration_image`, `v_inspection_report_image` from ". Vehicle::VEHICLE_DOC_TABLE. " WHERE ". Vehicle::VEHICLE_DOC_ID. "= ?";
     $stmt3 = $dbManager->getDbConnection()->prepare($sql);
 
-    $sql = "SELECT * from ". Driver::DRIVER_DOC_TABLE. " WHERE ". Driver::DRIVER_DOC_ID. "= ?";
+    $sql = "SELECT  `national_id_image`, `regular_license_image`, `psv_license_image`,`good_conduct_cert_image` from ". Driver::DRIVER_DOC_TABLE. " WHERE ". Driver::DRIVER_DOC_ID. "= ?";
     $stmt4 = $dbManager->getDbConnection()->prepare($sql);
 
     //get user information
