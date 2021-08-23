@@ -43,7 +43,7 @@ class DbManager implements DatabaseInterface{
      * @param bool $options - to pass to the PDO connection
      */
     public function __construct($options = false){
-		$this->dbHost = "localhost"; //getenv('DB_HOST');
+		$this->dbHost = "127.0.0.1"; //getenv('DB_HOST');
         $this->dbPort = "3306"; //getenv('DB_PORT');
         $this->dbName   = "leto_db"; //getenv('DB_DATABASE');
         $this->withOptions = $options;
