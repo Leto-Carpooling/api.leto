@@ -374,7 +374,7 @@
                empty($this->phone) ||
                empty($this->email) ||
                empty($this->profileImage) ||
-               !file_exists("storage/profile_images/$this->profileImage")
+               !file_exists("./../storage/profile_images/$this->profileImage")
                ){
                 return false;
             }
