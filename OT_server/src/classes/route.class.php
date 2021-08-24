@@ -9,7 +9,7 @@
        /**
         * database tables
         */
-        const   ROUTE_TABLE = "`route`",
+        const   ROUTE_TABLE = "route",
                 ROUTE_TABLE_ID = "`route`.`id`",
                 ROUTE = "route";
 

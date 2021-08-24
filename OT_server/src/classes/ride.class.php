@@ -13,9 +13,24 @@
               RIDE_TABLE_ID = "`ride`.`id`",
               RIDE = "ride";
 
-        public function __construct(){
+        public function __construct($rideId){
+            $dbManager = new DbManager();
 
+            $rideInfo = $dbManager->query(Ride::RIDE_TABLE, ["*"], Ride::RIDE_TABLE_ID . " = ?", [$rideId]);
+
+            if($rideInfo == false){
+                return;
+            }
+
+            $this->setId($rideId);
+            $this->setGroupId($rideInfo["groupId"]);
+            $this->setRouteId($rideInfo["routeId"]);
+            $this->setCompleted($rideInfo["completed"] > 0);
+            $this->setCompletedOn($rideInfo["completed_on"]);
+            $this->setCreatedOn($rideInfo["created_on"]);
+            
         }
+
 
         /**
          * Get the value of id

@@ -3,7 +3,7 @@
     if($isLoggedIn){
         exit(Response::ALIE());
     }
-    require("includes/phpmailer.inc.php");
+    require(__DIR__."/../includes/phpmailer.inc.php");
 
     //e = email test and s = signup
     $action = isset($_POST['action'])?$_POST['action']:"s";

@@ -401,7 +401,21 @@
             );
         }
 
-        
+        /**
+         * --------------------------
+         * Rider responses
+         * -------------------------
+         */
+
+         /**
+          * Profile Not complete error.
+          */
+        public static function PNCE(){
+            return Response::makeResponse(
+                "PNCE",
+                "Please add all the following: full names, email, phone number, and lastly, ensure that your email is confirmed"
+            );
+        }
     }
 
 ?>

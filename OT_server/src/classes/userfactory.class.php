@@ -34,7 +34,7 @@
                     }
                 default:
                 {
-                    return new User($user_id);
+                    return new Rider($user_id);
                 }
             }
         }

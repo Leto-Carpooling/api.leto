@@ -5,29 +5,48 @@
 
  require_once("master.inc.php");
 
- if(!$isLoggedIn){
-     exit(Response::NLIE());
- }
-
  $dbManager = new DbManager();
 
  //delete any active route with this rider id
- 
- $deletedRouteId = $dbManager->query(Route::A_ROUTE, [Route::A_ROUTE_ID], "riderId = ?", [$userId]);
+ $dbManager->setFetchAll(true);
 
- if($deletedRouteId !== false){
-     $deletedRouteId = $deletedRouteId["id"];
-     $dbManager->delete(Route::A_ROUTE, "riderId = ?", [$userId]);
+ $deleteRouteIds = $dbManager->query(Ride::RIDE_TABLE, ["*"], "riderId = ? and completed = 0", [$userId]);
+
+ $deleteGroups = [];
+ $deleteRoutes = [];
+
+ if($deleteRouteIds !== false && count($deleteRouteIds) > 0){
+     $pdo = $dbManager->getDbConnection();
+
+     $stmt1 =  $pdo->prepare("DELETE from ". RideGroup::GRP_TABLE . " where ". RideGroup::GRP_TABLE_ID. " = ? 
+     and NOT EXISTS (SELECT ". Ride::RIDE_TABLE_ID. " from " . Ride::RIDE_TABLE . " where groupId = ?)");
+     $stmt2 = $pdo->prepare("DELETE from ". Route::ROUTE_TABLE. " where ". Route:: ROUTE_TABLE_ID. " = ?");
+
+     foreach($deleteRouteIds as $rideInfo){
+         $routeId = $rideInfo["routeId"];
+         $groupId = $rideInfo["groupId"];
+
+         $deleteRoutes[] = $routeId;
+         if(!$stmt2->execute([$routeId])){
+             continue;
+         }
+
+         if($stmt1->execute([$groupId, $groupId]) && $stmt1->rowCount() > 0){
+            $deleteGroups[] = $groupId;
+         }
+     }
  }
- else{
-     $deletedRouteId = 0;
- }
 
- $routeId = $dbManager->insert(Route::A_ROUTE, ["riderId"], [$userId]);
+ $rideId = RideFactory::makeRide($userId);
 
- if($routeId == -1){
+ if($rideId == -1){
      exit(Response::SQE());
  }
+
+ $ride = new Ride($rideId);
+
+ $routeId = $ride->getRouteId();
+ $groupId = $ride->getGroupId();
 
  exit(
    Response::makeResponse(
@@ -35,7 +54,9 @@
        json_encode(
            [
                "routeId" => $routeId,
-               "deletedRouteId" => $deletedRouteId,
+               "groupId" => $groupId,
+               "deletedGroups" => $deleteGroups,
+               "deletedRoutes" => $deleteRoutes,
                "userId" => $userId,
                "message" => "successfully added the new route"
            ]

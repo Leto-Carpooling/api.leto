@@ -1,6 +1,6 @@
 <?php
 
- class Driver extends User{
+ class Driver extends Rider{
     protected $nationalId,
             $regLicense,
             $nationalIdImage = "pending",
