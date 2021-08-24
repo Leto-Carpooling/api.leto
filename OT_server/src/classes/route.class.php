@@ -27,15 +27,14 @@
          */
         public $routeObject;
 
+        /**
+         * groupId of the route
+         */
+        public $groupId;
+
+
         public function __construct($json_route){
             $this->routeObject = json_decode($json_route);
-        }
-
-        /**
-         * Checks if this route intersects another route
-         */
-        public function isCloserTo(Route $route){
-
         }
 
         /**
@@ -129,6 +128,32 @@
          */
         public static function fetchRoute($routeId){
             return "json_route";
+        }
+
+        /**
+         * -------------------------------
+         * Crud functionalities for routes
+         * --------------------------------
+         */
+
+        /**
+         * This function saves the route to the database and returns it's id.
+         * It also adds the route to a group by creating a new group. It then sets the 
+         * groupId property of this route.
+         */
+        public function saveRoute($riderId){
+            $dbManager = new DbManager();
+
+            $routeId = $dbManager->insert(Route::A_ROUTE, ["riderId"], [$riderId]);
+
+            if($routeId == -1){
+                return Response::SQE();
+            }
+
+            $this->id = $routeId;
+            //create a group for this route.
+
+            
         }
     }
 
