@@ -103,21 +103,9 @@ CREATE TABLE `vehicle_document` (
   FOREIGN KEY (`vehicleId`) REFERENCES `vehicle`(`vehicle_id`) on delete CASCADE
 );
 
-
-CREATE TABLE `completed_route` (
-  `id` bigint unsigned not null primary key,
-  `riderId` bigint unsigned not null,
-  `completed_on` datetime default current_timestamp,
-  FOREIGN KEY (`riderId`) REFERENCES `user`(`id`)
-);
-
-
-CREATE TABLE `active_route` (
+CREATE TABLE `route` (
   `id` bigint unsigned not null primary key auto_increment,
-  `riderId` bigint unsigned not null,
-  `created_on` datetime default current_timestamp,
-  `updated_on` datetime default current_timestamp on update current_timestamp,
-  FOREIGN KEY (`riderId`) REFERENCES `user`(`id`)  
+  `created_on` datetime default current_timestamp
 );
 
 CREATE TABLE `ride_group` (
@@ -128,18 +116,16 @@ CREATE TABLE `ride_group` (
   FOREIGN KEY (`driverId`) REFERENCES `driver_information`(`driverId`)
 );
 
+
 CREATE TABLE `ride` (
   `id` bigint unsigned not null primary key auto_increment,
+  `riderId` bigint unsigned not null,
   `routeId` bigint unsigned not null,
-  `created_on` datetime default current_timestamp,
-  `updated_on` datetime default current_timestamp on update current_timestamp  
-);
-
-CREATE TABLE `rider_grouping` (
-  `id` bigint unsigned not null primary key auto_increment,
   `groupId` bigint unsigned not null,
-  `rideId` bigint unsigned not null,
+  `completed` tinyint unsigned not null default 0,
   `created_on` datetime default current_timestamp,
+  `completed_on` datetime default current_timestamp on update current_timestamp     ,
   FOREIGN KEY (`groupId`) REFERENCES `ride_group`(`id`) ON DELETE CASCADE,
-  FOREIGN KEY (`rideId`) REFERENCES `ride`(`id`) ON DELETE CASCADE
+  FOREIGN KEY (`routeId` ) REFERENCES `route`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`riderId`) REFERENCES `user`(`id`) ON DELETE CASCADE
 );
