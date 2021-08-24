@@ -6,7 +6,7 @@
      * meta data such as distance. It only contains route ids and group id.
      */
 
-    class RouteGroup{
+    class RideGroup{
         private $id,
                 $routeIds,
                 $driverId,
@@ -15,32 +15,29 @@
 
         const GRP_TABLE = "ride_group",
               GRP_TABLE_ID = "`ride_group`.`id`",
-              RIDER_GROUPING = "rider_grouping",
-              RIDER_GROUPING_ID = "`rider_grouping`.`id`",
-              ROUTE = "route",
               GROUP = "group";
 
         /**
          * All parameters are optional
          * A group is created with now id, you must call the 
-         * RouteGroup#loadFromRoute($routeId) or RouteGroup#loadFromGroup($groupId) to load 
+         * RideGroup#loadFromRide($routeId) or RideGroup#loadFromGroup($groupId) to load 
          * group from the database.
          * @param int $id - The id from which the group data should be loaded. This could either be a routeId or a groupId.
-         * @param string $from - Tells the constructor the type of id that was passed. Could take values RouteGroup::GROUP or RouteGroup::ROUTE
+         * @param string $from - Tells the constructor the type of id that was passed. Could take values RideGroup::GROUP or RideGroup::ROUTE
          * 
          */
-        public function __construct($id = 0, $from = RouteGroup::GROUP){
+        public function __construct($id = 0, $from = RideGroup::GROUP){
             $this->routeIds = [];
             if($id > 0){
                 switch($from){
-                    case RouteGroup::GROUP:
+                    case RideGroup::GROUP:
                         {
                             $this->loadFromGroup($id);
                             break;
                         }
-                    case RouteGroup::ROUTE:
+                    case Route::ROUTE:
                         {
-                            $this->loadFromRoute($id);
+                            $this->loadFromRide($id);
                             break;
                         }
                 }
@@ -51,29 +48,29 @@
          * Loads the group information from a route that is a member of it.
          * @param int $routeId - The route whose group you want to create.
          */
-        public function loadFromRoute($routeId){
+        public function loadFromRide($routeId){
             $dbManager = new DbManager();
 
             $dbManager->setFetchAll(true);
 
-            $routeInfo = $dbManager->query(RouteGroup::RIDER_GROUPING, ["rideId, groupId"], "rideId = ? and groupId = (SELECT groupId from ". RouteGroup::RIDER_GROUPING. " where rideId = ?", [$routeId, $routeId]);
+            $rideInfo = $dbManager->query(Ride::RIDE_TABLE, ["routeId, groupId"], "routeId = ? and groupId = (SELECT groupId from ". Ride::RIDE_TABLE. " where routeId = ?)", [$routeId, $routeId]);
     
             $dbManager->setFetchAll(false);
 
-            if($routeInfo === false || count($routeInfo) < 1){
+            if($rideInfo === false || count($rideInfo) < 1){
                 return false;
             }
 
-            $groupId = $routeInfo[0]["groupId"];
+            $groupId = $rideInfo[0]["groupId"];
 
-            $groupInfo = $dbManager->query(RouteGroup::GRP_TABLE, ["*"], "groupId = ?", [$groupId]);
+            $groupInfo = $dbManager->query(RideGroup::GRP_TABLE, ["*"], "groupId = ?", [$groupId]);
 
             if($groupInfo === false){
                 return false;
             }
 
             $this->setId($groupId);
-            $this->populateRids($routeInfo);
+            $this->populateRids($rideInfo);
             $this->setCreatedOn($groupInfo["created_on"]);
             $this->setUpdatedOn($groupInfo["updated_on"]);
             
@@ -87,7 +84,7 @@
         public function loadFromGroup($groupId){
             $dbManager = new DbManager();
 
-            $groupInfo = $dbManager->query(RouteGroup::GRP_TABLE, ["*"], "groupId = ?", [$groupId]);
+            $groupInfo = $dbManager->query(RideGroup::GRP_TABLE, ["*"], "groupId = ?", [$groupId]);
 
             if($groupInfo === false){
                 return false;
@@ -95,17 +92,17 @@
 
             $dbManager->setFetchAll(true);
 
-            $routeInfo = $dbManager->query(RouteGroup::RIDER_GROUPING, ["rideId, groupId"], " groupId = ?", [$groupId]);
+            $rideInfo = $dbManager->query(Ride::RIDE_TABLE, ["routeId, groupId"], " groupId = ?", [$groupId]);
 
             $dbManager->setFetchAll(false);
 
-            if($routeInfo === false || count($routeInfo) < 1){
+            if($rideInfo === false || count($rideInfo) < 1){
                 return false;
             }
 
 
             $this->setId($groupId);
-            $this->populateRids($routeInfo);
+            $this->populateRids($rideInfo);
             $this->setCreatedOn($groupInfo["created_on"]);
             $this->setUpdatedOn($groupInfo["updated_on"]);
             
@@ -120,9 +117,25 @@
         function populateRids($arrayOfAssocArray){
             $this->routeIds = [];
 
-            foreach($arrayOfAssocArray as $routeInfo){
-                $this->routeIds[] = $routeInfo["routeId"];
+            foreach($arrayOfAssocArray as $rideInfo){
+                $this->routeIds[] = $rideInfo["routeId"];
             }
+        }
+
+        /**
+         * Makes and return it's id
+         * @return int
+         */
+        public static function makeNewGroup(){
+            $dbManager = new DbManager();
+
+            $groupId = $dbManager->insert(RideGroup::GRP_TABLE, ["driverId"], [null]);
+
+            if($groupId == -1){
+                return -1;
+            }
+
+            return $groupId;
         }
 
         /**
@@ -224,6 +237,8 @@
 
                         return $this;
         }
+
+        
     }
 
 ?>

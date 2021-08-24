@@ -9,10 +9,9 @@
        /**
         * database tables
         */
-        const   A_ROUTE = "`active_route`",
-                A_ROUTE_ID = "`active_route`.`id`",
-                C_ROUTE = "`completed_route`",
-                C_ROUTE_ID = "`completed_route`.`id`";
+        const   ROUTE_TABLE = "`route`",
+                ROUTE_TABLE_ID = "`route`.`id`",
+                ROUTE = "route";
 
         /**
          * Points to the current step in the route
@@ -136,25 +135,6 @@
          * --------------------------------
          */
 
-        /**
-         * This function saves the route to the database and returns it's id.
-         * It also adds the route to a group by creating a new group. It then sets the 
-         * groupId property of this route.
-         */
-        public function saveRoute($riderId){
-            $dbManager = new DbManager();
-
-            $routeId = $dbManager->insert(Route::A_ROUTE, ["riderId"], [$riderId]);
-
-            if($routeId == -1){
-                return Response::SQE();
-            }
-
-            $this->id = $routeId;
-            //create a group for this route.
-
-            
-        }
     }
 
 ?>
