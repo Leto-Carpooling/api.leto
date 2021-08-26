@@ -11,7 +11,12 @@
                 $routeIds,
                 $driverId,
                 $createdOn,
-                $updatedOn;
+                $updatedOn,
+                $startLongitude,
+                $startLatitude,
+                $endLongitude,
+                $endLatitude,
+                $numOfRiders;
 
         const GRP_TABLE = "ride_group",
               GRP_TABLE_ID = "`ride_group`.`id`",
@@ -71,6 +76,12 @@
 
             $this->setId($groupId);
             $this->populateRids($rideInfo);
+    
+            $this->setStartLatitude($groupInfo["s_lat"]);
+            $this->setStartLongitude($groupInfo["s_long"]);
+            $this->setEndLatitude($groupInfo["e_lat"]);
+            $this->setEndLongitude($groupInfo["e_long"]);
+            $this->setNumOfRiders($groupInfo["num_riders"]);
             $this->setCreatedOn($groupInfo["created_on"]);
             $this->setUpdatedOn($groupInfo["updated_on"]);
             
@@ -103,9 +114,15 @@
 
             $this->setId($groupId);
             $this->populateRids($rideInfo);
+            
+            $this->setStartLatitude($groupInfo["s_lat"]);
+            $this->setStartLongitude($groupInfo["s_long"]);
+            $this->setEndLatitude($groupInfo["e_lat"]);
+            $this->setEndLongitude($groupInfo["e_long"]);
+            $this->setNumOfRiders($groupInfo["num_riders"]);
             $this->setCreatedOn($groupInfo["created_on"]);
             $this->setUpdatedOn($groupInfo["updated_on"]);
-            
+
             return true;
         }
 
@@ -136,6 +153,16 @@
             }
 
             return $groupId;
+        }
+
+        public function addToGroup($rideId){
+            if(empty($this->id)){
+                return false;
+            }
+
+            $ride = new Ride($rideId);
+
+            return $ride->setGroupId($this->id);
         }
 
         /**
@@ -239,6 +266,106 @@
         }
 
         
+
+        /**
+         * Get the value of startLongitude
+         */ 
+        public function getStartLongitude()
+        {
+                        return $this->startLongitude;
+        }
+
+        /**
+         * Set the value of startLongitude
+         *
+         * @return  self
+         */ 
+        public function setStartLongitude($startLongitude)
+        {
+                        $this->startLongitude = $startLongitude;
+
+                        return $this;
+        }
+
+        /**
+         * Get the value of startLatitude
+         */ 
+        public function getStartLatitude()
+        {
+                        return $this->startLatitude;
+        }
+
+        /**
+         * Set the value of startLatitude
+         *
+         * @return  self
+         */ 
+        public function setStartLatitude($startLatitude)
+        {
+                        $this->startLatitude = $startLatitude;
+
+                        return $this;
+        }
+
+        /**
+         * Get the value of endLongitude
+         */ 
+        public function getEndLongitude()
+        {
+                        return $this->endLongitude;
+        }
+
+        /**
+         * Set the value of endLongitude
+         *
+         * @return  self
+         */ 
+        public function setEndLongitude($endLongitude)
+        {
+                        $this->endLongitude = $endLongitude;
+
+                        return $this;
+        }
+
+        /**
+         * Get the value of endLatitude
+         */ 
+        public function getEndLatitude()
+        {
+                        return $this->endLatitude;
+        }
+
+        /**
+         * Set the value of endLatitude
+         *
+         * @return  self
+         */ 
+        public function setEndLatitude($endLatitude)
+        {
+                        $this->endLatitude = $endLatitude;
+
+                        return $this;
+        }
+
+        /**
+         * Get the value of numOfRiders
+         */ 
+        public function getNumOfRiders()
+        {
+                        return $this->numOfRiders;
+        }
+
+        /**
+         * Set the value of numOfRiders
+         *
+         * @return  self
+         */ 
+        public function setNumOfRiders($numOfRiders)
+        {
+                        $this->numOfRiders = $numOfRiders;
+
+                        return $this;
+        }
     }
 
 ?>

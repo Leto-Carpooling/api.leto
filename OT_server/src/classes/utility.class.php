@@ -4,7 +4,11 @@
         public static $nameRegex = "/^[\w]+(\s?[\w\-_\'\.]+?\s*?)+?$/";
         public static $phoneRegex = "/^\+\d{12}$/"; 
         public static $acceptedImages = ".jpg, .png, .bmp, .gif, .webp";
-        const PRIME_NUMBER = 1879;
+        const PRIME_NUMBER = 1879,
+              LAT = "latitude",
+              LONG = "longitude",
+              LAT_TO_METER = 111000,
+              LONG_TO_METER = 111000;
         /**
          * checks names to ensure that they meet policy
          */
@@ -210,6 +214,18 @@
             );
           }
 
+          public static function LatLngToMeter($input, $type){
+              switch($type){
+                  case Utility::LAT:
+                    {
+                        return $input * Utility::LONG_TO_METER;
+                    }
+                  case Utility::LONG:
+                    {
+                        return $input * Utility::LAT_TO_METER;
+                    }
+              }
+          }
     }
 
 ?>

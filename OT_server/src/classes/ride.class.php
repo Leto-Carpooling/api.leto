@@ -63,13 +63,18 @@
         /**
          * Set the value of groupId
          *
-         * @return  self
+         * @return bool
          */ 
         public function setGroupId($groupId)
         {
-                        $this->groupId = $groupId;
+            $dbManager = new DbManager();
 
-                        return $this;
+            if($dbManager->update(Ride::RIDE_TABLE, "groupId = ?", [$groupId], Ride::RIDE_TABLE_ID ." = ?", [$this->id] )){
+                $this->groupId = $groupId;
+                return true;
+            }
+            
+            return false;
         }
 
         /**

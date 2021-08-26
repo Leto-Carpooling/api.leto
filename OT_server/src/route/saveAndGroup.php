@@ -5,9 +5,16 @@
 
  require_once("master.inc.php");
 
+ $routePoints = $_POST["route-points"];
+
+ if(!$routePoints = json_decode($routePoints)){
+     exit(Response::UEO());
+ }
+
  $dbManager = new DbManager();
 
  //delete any active route with this rider id
+
  $dbManager->setFetchAll(true);
 
  $deleteRouteIds = $dbManager->query(Ride::RIDE_TABLE, ["*"], "riderId = ? and completed = 0", [$userId]);
@@ -46,7 +53,13 @@
  $ride = new Ride($rideId);
 
  $routeId = $ride->getRouteId();
- $groupId = $ride->getGroupId();
+ $routeGrouper = new RouteGroupper();
+
+ $groupId = $routeGrouper->group($rideId, $routePoints->start_latitude, $routePoints->start_longitude, $routePoints->end_latitude, $routePoints->end_longitude);
+
+ if($groupId === false){
+     $groupId = $ride->getGroupId();
+ }
 
  exit(
    Response::makeResponse(

@@ -108,14 +108,19 @@ CREATE TABLE `route` (
   `created_on` datetime default current_timestamp
 );
 
+
 CREATE TABLE `ride_group` (
   `id` bigint unsigned not null primary key auto_increment,
   `driverId` bigint unsigned,
+  `s_long` float not null,
+  `s_lat` float not null,
+  `e_long` float not null,
+  `e_lat` float not null,
+  `num_riders` smallint not null default 0,
   `created_on` datetime default current_timestamp,
-  `updated_on` datetime default current_timestamp on update current_timestamp  ,
-  FOREIGN KEY (`driverId`) REFERENCES `driver_information`(`driverId`)
+  `updated_on` datetime default current_timestamp on update current_timestamp    ,
+  FOREIGN KEY (`driverId`) REFERENCES `driver_information`(`driverId`) on delete set null
 );
-
 
 CREATE TABLE `ride` (
   `id` bigint unsigned not null primary key auto_increment,
