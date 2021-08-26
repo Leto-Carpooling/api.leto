@@ -62,6 +62,7 @@ date_default_timezone_set('Etc/UTC');
          * @return bool
          */
         function sendEmail($recName, $recEmail, $sub, $msg, $attachment = false, $replyTo = false){
+          
             $mail = $GLOBALS['mail'];
             $mail->addAddress($recEmail, $recName);
             $mail->Subject = $sub;

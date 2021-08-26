@@ -7,8 +7,8 @@
      */
     
     require("master.inc.php");
-    require("includes/phpmailer.inc.php");
-    require("includes/sms.inc.php");
+    require(__DIR__."/../includes/phpmailer.inc.php");
+    require(__DIR__."/../includes/sms.inc.php");
 
     if(!$isLoggedIn){exit(Response::NLIE());}
 

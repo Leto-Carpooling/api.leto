@@ -4,7 +4,7 @@
         exit(Response::ALIE());
     }
 
-    require("includes/phpmailer.inc.php");
+    require(__DIR__."/../includes/phpmailer.inc.php");
 
     $action = isset($_POST["action"])? $_POST["action"]: "nothing";
     $user = new User();
