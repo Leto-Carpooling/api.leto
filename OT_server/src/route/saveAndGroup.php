@@ -57,10 +57,10 @@
 
  $groupId = $routeGrouper->group($rideId, $routePoints->start_latitude, $routePoints->start_longitude, $routePoints->end_latitude, $routePoints->end_longitude);
 
- $groupExist = true;
+ $groupExists = true;
  if($groupId === false){
      $groupId = $ride->getGroupId();
-     $groupExist = false;
+     $groupExists = false;
  }
 
  exit(
@@ -70,7 +70,7 @@
            [
                "routeId" => $routeId,
                "groupId" => $groupId,
-               "groupExist" => $groupExist,
+               "groupExists" => $groupExists,
                "deletedGroups" => $deleteGroups,
                "deletedRoutes" => $deleteRoutes,
                "userId" => $userId,
