@@ -16,16 +16,12 @@
             $dbManager = new DbManager();
 
             $dbManager->setFetchAll(true);
-            $groups = $dbManager->query(RideGroup::GRP_TABLE, 
+            $groups = $dbManager->query("
+            (SELECT * , (SQRT(POWER(($sLong - s_long), 2) + POWER( $sLat - s_lat ,2)) * ". Utility::LAT_TO_METER .")  as start_distance, (SQRT(POWER(($eLong - e_long), 2) + POWER( $eLat - e_lat ,2)) * ". Utility::LAT_TO_METER .") as end_distance FROM `". RideGroup::GRP_TABLE ."`) as ride_group_distance", 
             [ 
-                "*" ,
-                "(SQRT(
-                    POWER(($sLong - s_long), 2) + POWER( $sLat - s_lat ,2) 
-                         ) * ". Utility::LAT_TO_METER .")  as start_distance, (SQRT(
-                    POWER(($eLong - e_long), 2) + POWER( $eLat - e_lat ,2) 
-                        ) * ".Utility::LAT_TO_METER.") as end_distance"
+                "*"
             ], 
-            "start_distance <= ? AND end_distance <= ? AND num_riders != ? order by start_distance, end_distance ASC", [400, 400, 1]);
+            "start_distance <= ? AND end_distance <= ? AND num_riders != ? order by start_distance, end_distance ASC", [400, 400, 1], false);
 
             if($groups === false){
                 return false;

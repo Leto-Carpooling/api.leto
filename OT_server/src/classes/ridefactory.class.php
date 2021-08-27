@@ -8,7 +8,7 @@
         /**
          * Makes a ride and returns it's id
          */
-        public static function makeRide($riderId){
+        public static function makeRide($riderId, $sLat, $sLong, $eLat, $eLong, $numOfRiders){
             $dbManager = new DbManager();
 
             $routeId = RouteFactory::getNewId();
@@ -17,7 +17,7 @@
                 return -1;
             }
 
-            $groupId = RideGroup::makeNewGroup();
+            $groupId = RideGroup::makeNewGroup($sLat, $sLong, $eLat, $eLong, $numOfRiders);
 
             if($groupId == -1){
                 return -1;

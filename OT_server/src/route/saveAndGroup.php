@@ -44,7 +44,13 @@
      }
  }
 
- $rideId = RideFactory::makeRide($userId);
+ $rideId = RideFactory::makeRide(
+     $userId, $routePoints->start_latitude, 
+     $routePoints->start_longitude, 
+     $routePoints->end_latitude, 
+     $routePoints->end_longitude, 
+     $routePoints->rideType
+    );
 
  if($rideId == -1){
      exit(Response::SQE());
@@ -55,13 +61,18 @@
  $routeId = $ride->getRouteId();
  $routeGrouper = new RouteGroupper();
 
- $groupId = $routeGrouper->group($rideId, $routePoints->start_latitude, $routePoints->start_longitude, $routePoints->end_latitude, $routePoints->end_longitude);
+ $group = $routeGrouper->group($rideId, $routePoints->start_latitude, $routePoints->start_longitude, $routePoints->end_latitude, $routePoints->end_longitude);
 
  $groupExists = true;
- if($groupId === false){
+ $groupId = $group->getId();
+
+ if($groupId === false ||
+    $groupId == $ride->getGroupId()){
      $groupId = $ride->getGroupId();
      $groupExists = false;
  }
+
+ 
 
  exit(
    Response::makeResponse(

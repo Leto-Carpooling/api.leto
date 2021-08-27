@@ -20,7 +20,8 @@
 
         const GRP_TABLE = "ride_group",
               GRP_TABLE_ID = "`ride_group`.`id`",
-              GROUP = "group";
+              GROUP = "group",
+              FARE_INC_PCNT = 0.3;
 
         /**
          * All parameters are optional
@@ -95,7 +96,7 @@
         public function loadFromGroup($groupId){
             $dbManager = new DbManager();
 
-            $groupInfo = $dbManager->query(RideGroup::GRP_TABLE, ["*"], "groupId = ?", [$groupId]);
+            $groupInfo = $dbManager->query(RideGroup::GRP_TABLE, ["*"], RideGroup::GRP_TABLE_ID. " = ?", [$groupId]);
 
             if($groupInfo === false){
                 return false;
@@ -140,13 +141,12 @@
         }
 
         /**
-         * Makes and return it's id
-         * @return int
+         * 
          */
-        public static function makeNewGroup(){
+        public static function makeNewGroup($sLat, $sLong, $eLat, $eLong, $numOfRiders){
             $dbManager = new DbManager();
 
-            $groupId = $dbManager->insert(RideGroup::GRP_TABLE, ["driverId"], [null]);
+            $groupId = $dbManager->insert(RideGroup::GRP_TABLE, ["s_long", "s_lat","e_long","e_lat","num_riders", "driverId"], [$sLong, $sLat, $eLong, $eLat, $numOfRiders, null]);
 
             if($groupId == -1){
                 return -1;
@@ -163,6 +163,25 @@
             $ride = new Ride($rideId);
 
             return $ride->setGroupId($this->id);
+        }
+
+
+        /**
+         * @param int $fare - the fare to divide amoungst the member.
+         * The fare increases by 25%
+         */
+        public function distributeFare($fare){
+            return round(
+                (
+                    $fare * 
+                    (
+                        1 + 
+                        (
+                        count($this->routeIds) - 1
+                        ) * RideGroup::FARE_INC_PCNT
+                    )
+                )/count($this->routeIds)
+            );
         }
 
         /**

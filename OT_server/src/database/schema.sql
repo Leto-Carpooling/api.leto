@@ -122,14 +122,16 @@ CREATE TABLE `ride_group` (
   FOREIGN KEY (`driverId`) REFERENCES `driver_information`(`driverId`) on delete set null
 );
 
+
 CREATE TABLE `ride` (
   `id` bigint unsigned not null primary key auto_increment,
   `riderId` bigint unsigned not null,
   `routeId` bigint unsigned not null,
   `groupId` bigint unsigned not null,
   `completed` tinyint unsigned not null default 0,
+  `completed_on` datetime      ,
   `created_on` datetime default current_timestamp,
-  `completed_on` datetime default current_timestamp on update current_timestamp     ,
+  `updated_on` datetime default current_timestamp on update current_timestamp     ,
   FOREIGN KEY (`groupId`) REFERENCES `ride_group`(`id`) ON DELETE CASCADE,
   FOREIGN KEY (`routeId` ) REFERENCES `route`(`id`) ON DELETE CASCADE,
   FOREIGN KEY (`riderId`) REFERENCES `user`(`id`) ON DELETE CASCADE

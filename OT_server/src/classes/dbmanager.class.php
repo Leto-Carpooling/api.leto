@@ -47,7 +47,7 @@ class DbManager implements DatabaseInterface{
         $this->dbPort = "3306"; //getenv('DB_PORT');
         $this->dbName   = "leto_db"; //getenv('DB_DATABASE');
         $this->withOptions = $options;
-		$this->currentStatement = null;
+		//$this->currentStatement = null;
     }
 
 	/**
@@ -91,11 +91,16 @@ class DbManager implements DatabaseInterface{
 	 *
 	 * @return array|bool
 	 */
-	public function query($table, $columns, $condition_string, $condition_values) {
+	public function query($table, $columns, $condition_string, $condition_values, $add_ticks = true) {
 		$this->connect();
 		
-		$sql = "SELECT " . implode (", ", $columns) ." from `$table` where $condition_string";
-		
+		if($add_ticks === true){
+			$table = "`$table`";
+		}
+
+		$sql = "SELECT " . implode (", ", $columns) ." from $table where $condition_string";
+		//echo " $sql ;";
+
             $stmt = $this->dbConnection->prepare($sql);
             if($stmt->execute($condition_values)){
                 $result = ($this->fetchAll)? $stmt->fetchAll() : $stmt->fetch();
@@ -117,7 +122,7 @@ class DbManager implements DatabaseInterface{
 	 * @return int
 	 */
 	public function insert($table, $columns, $values) {
-		$sql = "INSERT INTO `$table`(". implode($columns, ", "). ") values (". $this->buildInsertPlaceholders(count($values)) .")";
+		$sql = "INSERT INTO `$table`(". implode(", ",$columns). ") values (". $this->buildInsertPlaceholders(count($values)) .")";
 
 		$this->connect();
 		$statement = $this->dbConnection->prepare($sql);

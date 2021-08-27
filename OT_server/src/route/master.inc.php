@@ -12,6 +12,11 @@ if(!$rider->canRide()){
 }
 
 use yidas\googleMaps\Client;
+use Kreait\Firebase\Factory;
+
+$factory = (new Factory)->withServiceAccount(__DIR__."/../includes/". LETO_FB_JSON);
 $gMaps = new Client(['key' => G_MAP_API_KEY]);
+
+
 
 ?>
