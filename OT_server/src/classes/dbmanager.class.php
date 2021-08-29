@@ -11,6 +11,7 @@ class DbManager implements DatabaseInterface{
 	private $withOptions = false;
 	private $fetchAll = false;
 	private $currentStatement;
+	private $lastQuery;
 
 	const USER_TABLE = "user",
 	      USER_ID = "`user`.`id`",
@@ -93,13 +94,13 @@ class DbManager implements DatabaseInterface{
 	 */
 	public function query($table, $columns, $condition_string, $condition_values, $add_ticks = true) {
 		$this->connect();
-		
+
 		if($add_ticks === true){
 			$table = "`$table`";
 		}
 
 		$sql = "SELECT " . implode (", ", $columns) ." from $table where $condition_string";
-		//echo " $sql ;";
+		$this->setLastQuery($sql);
 
             $stmt = $this->dbConnection->prepare($sql);
             if($stmt->execute($condition_values)){
@@ -123,6 +124,7 @@ class DbManager implements DatabaseInterface{
 	 */
 	public function insert($table, $columns, $values) {
 		$sql = "INSERT INTO `$table`(". implode(", ",$columns). ") values (". $this->buildInsertPlaceholders(count($values)) .")";
+		$this->setLastQuery($sql);
 
 		$this->connect();
 		$statement = $this->dbConnection->prepare($sql);
@@ -201,7 +203,8 @@ class DbManager implements DatabaseInterface{
 		$this->connect();
 
 		$sql = "UPDATE `$table` set $columns_string where $condition_string";
-		
+		$this->setLastQuery($sql);
+
             $stmt = $this->dbConnection->prepare($sql);
 			$this->currentStatement = $stmt;
 			$combinedValues = array_merge($values, $condition_values);
@@ -222,6 +225,7 @@ class DbManager implements DatabaseInterface{
 		$this->connect();
 		
 		$sql = "DELETE from `$table` where $condition_string";
+		$this->setLastQuery($sql);
 		$stmt = $this->dbConnection->prepare($sql);
 		$this->currentStatement = $stmt;
 		if($stmt->execute($condition_values)){
@@ -260,6 +264,26 @@ class DbManager implements DatabaseInterface{
 	 */
 	public function getAffRowsCount(){
 		return $this->currentStatement->rowCount();
+	}
+
+	/**
+	 * Get the value of lastQuery
+	 */ 
+	public function getLastQuery()
+	{
+		return $this->lastQuery;
+	}
+
+	/**
+	 * Set the value of lastQuery
+	 *
+	 * @return  self
+	 */ 
+	public function setLastQuery($lastQuery)
+	{
+		$this->lastQuery = $lastQuery;
+
+		return $this;
 	}
 }
 

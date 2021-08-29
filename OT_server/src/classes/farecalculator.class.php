@@ -12,7 +12,8 @@
         
         const BASE_FARE = 80,
               PER_KM = 25,
-              PER_MIN = 4;
+              PER_MIN = 4,
+              MINIMUM_WAGE = 150;
 
         private $firebaseDb,
                 $factory,
@@ -58,7 +59,7 @@
 
             $totalPrice = round($pricePerKm) + round($pricePerMin) + FareCalculator::BASE_FARE;
 
-            return $totalPrice;
+            return max($totalPrice, FareCalculator::MINIMUM_WAGE);
             
         }
     }

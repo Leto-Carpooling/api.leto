@@ -155,14 +155,19 @@
             return $groupId;
         }
 
-        public function addToGroup($rideId){
-            if(empty($this->id)){
+        public static function makeAndGroupRide($groupId, $riderId){
+            $group = new RideGroup($groupId);
+            if($group->getNumberOfRides() >= Vehicle::getMaxCapacity()){
                 return false;
             }
 
-            $ride = new Ride($rideId);
+            $rideId = RideFactory::makeRide($riderId, $groupId);
+            
+            if($rideId == -1){
+                return false;
+            }
 
-            return $ride->setGroupId($this->id);
+            return $rideId;
         }
 
 
@@ -384,6 +389,10 @@
                         $this->numOfRiders = $numOfRiders;
 
                         return $this;
+        }
+
+        public function getNumberOfRides(){
+            return count($this->routeIds);
         }
     }
 
