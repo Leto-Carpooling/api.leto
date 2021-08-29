@@ -3,6 +3,7 @@
  class Driver extends Rider{
     protected $nationalId,
             $regLicense,
+            $driverState,
             $nationalIdImage = "pending",
             $regLicenseImage = "pending",
             $psvLicenseImage = "pending",
@@ -19,6 +20,10 @@
           DLICENSE_PATH = "driver/licenses/regular",
           PSVLICENSE_PATH = "driver/licenses/psv",
           GOODCONDUCT_PATH = "driver/good_conduct";
+
+    const OPEN = 0,
+          ENROUTE = 1,
+          ONTRIP = 2;
     
     /**
      * Database tables
@@ -61,6 +66,7 @@
             return false;
         }
 
+        $this->setDriverState($driverDoc["driver_state"]);
         $this->setNationalIdImage($driverDoc["national_id_image"]);
         $this->setRegLicenseImage($driverDoc["regular_license_image"]);
         $this->setPsvLicenseImage($driverDoc["psv_license_image"]);
@@ -384,6 +390,30 @@
                 $this->updatedDocumentOn = $updatedDocumentOn;
 
                 return $this;
+    }
+
+    /**
+     * Get the value of driverState
+     */ 
+    public function getDriverState()
+    {
+                return $this->driverState;
+    }
+
+    /**
+     * Set the value of driverState
+     * This should be `Driver::OPEN`, `Driver::ENROUTE` or `Driver::ONTRIP`
+     * @return  self
+     */ 
+    public function setDriverState($driverState)
+    {
+                $dbManager = new DbManager();
+                if(!empty($this->id) && $dbManager->update(Driver::DRIVER_TABLE, "driver_state = ?", [$driverState], Driver::DRIVER_ID ." = ?", [$this->id])){
+                    $this->driverState = $driverState;
+                    return true;
+                }
+
+                return false;
     }
  }
 

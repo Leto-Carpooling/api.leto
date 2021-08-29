@@ -149,6 +149,21 @@ class Vehicle{
         $this->loadVehicle($this->id);
     }
     
+
+    /**
+     * Gets the maximum capacity of the vehicles currently saved in the system.
+     * currently returns 4 by default
+     */
+    public static function getMaxCapacity(){
+        $dbManager = new DbManager();
+        $maxInfo = $dbManager->query(Vehicle::VEHICLE_TABLE, ["MAX(capacity) as max_capacity"], "1", []);
+        if($maxInfo === false || empty($maxInfo['max_capacity'])){
+            return 4;
+        }
+
+        return $maxInfo['max_capacity'];
+    }
+
     /**
      * Get the value of id
      */ 

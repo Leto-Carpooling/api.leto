@@ -30,66 +30,96 @@
      $stmt2 = $pdo->prepare("DELETE from ". Route::ROUTE_TABLE. " where ". Route:: ROUTE_TABLE_ID. " = ?");
 
      foreach($deleteRouteIds as $rideInfo){
-         $routeId = $rideInfo["routeId"];
-         $groupId = $rideInfo["groupId"];
+         $_routeId = $rideInfo["routeId"];
+         $_groupId = $rideInfo["groupId"];
 
-         $deleteRoutes[] = $routeId;
-         if(!$stmt2->execute([$routeId])){
+         $deleteRoutes[] = $_routeId;
+         if(!$stmt2->execute([$_routeId])){
              continue;
          }
 
-         if($stmt1->execute([$groupId, $groupId]) && $stmt1->rowCount() > 0){
-            $deleteGroups[] = $groupId;
+         if($stmt1->execute([$_groupId, $_groupId]) && $stmt1->rowCount() > 0){
+            $deleteGroups[] = $_groupId;
          }
      }
  }
 
- $rideId = RideFactory::makeRide(
-     $userId, $routePoints->start_latitude, 
-     $routePoints->start_longitude, 
-     $routePoints->end_latitude, 
-     $routePoints->end_longitude, 
-     $routePoints->rideType
-    );
-
- if($rideId == -1){
-     exit(Response::SQE());
- }
-
- $ride = new Ride($rideId);
-
- $routeId = $ride->getRouteId();
- $routeGrouper = new RouteGroupper();
-
- $group = $routeGrouper->group($rideId, $routePoints->start_latitude, $routePoints->start_longitude, $routePoints->end_latitude, $routePoints->end_longitude);
-
  $groupExists = true;
- $groupId = $group->getId();
+ $groups = false;
+ $addedToGroup = false;
 
- if($groupId === false ||
-    $groupId == $ride->getGroupId()){
-     $groupId = $ride->getGroupId();
-     $groupExists = false;
+ //try until we add the ride to a group
+ while(!$addedToGroup){
+
+    if($routePoints->rideType != 1){
+        $routeGrouper = new RouteGroupper();
+        $groups = $routeGrouper->findGroup($routePoints->start_latitude, $routePoints->start_longitude, $routePoints->end_latitude, $routePoints->end_longitude);
+     }
+    
+     
+     if($groups === false || count($groups) < 1){
+         $groupExists = false;
+         $groupId = RideGroup::makeNewGroup($routePoints->start_latitude, $routePoints->start_longitude, $routePoints->end_latitude, $routePoints->end_longitude, $routePoints->rideType);
+         $rideId = RideGroup::makeAndGroupRide($groupId, $userId);
+
+     }
+     else{
+        //cycle the array twice to add the ride to a group
+        $index = 0;
+        while(true){
+            $currentGroup = $groups[$index % count($groups)];
+    
+            $group = new RideGroup($currentGroup["id"]);
+            if($group->getNumberOfRides() >= Vehicle::getMaxCapacity()){
+                unset($groups[$index]);
+                $groups = array_values($groups);
+                continue;
+            }
+    
+            if(count($groups) < 1){
+                break;
+            }
+    
+            $rideId = RideGroup::makeAndGroupRide($group->getId(), $userId);
+    
+            if($rideId !== false){
+                break;
+            }
+    
+            $index++;
+        }
+     }
+    
+     if($rideId !== false){
+        $addedToGroup = true;
+     }
+    
+     if($addedToGroup){
+        $ride = new Ride($rideId);
+    
+        $routeId = $ride->getRouteId();
+        $groupId = $ride->getGroupId();
+       
+        exit(
+           Response::makeResponse(
+               "OK",
+               json_encode(
+                   [
+                       "routeId" => $routeId,
+                       "groupId" => $groupId,
+                       "groupExists" => $groupExists,
+                       "deletedGroups" => $deleteGroups,
+                       "deletedRoutes" => $deleteRoutes,
+                       "userId" => $userId,
+                       "message" => "successfully added the new route"
+                   ]
+               )
+           )  
+         );
+     }
+     
  }
-
  
 
- exit(
-   Response::makeResponse(
-       "OK",
-       json_encode(
-           [
-               "routeId" => $routeId,
-               "groupId" => $groupId,
-               "groupExists" => $groupExists,
-               "deletedGroups" => $deleteGroups,
-               "deletedRoutes" => $deleteRoutes,
-               "userId" => $userId,
-               "message" => "successfully added the new route"
-           ]
-       )
-   )  
- );
-
-
+ 
 ?>
