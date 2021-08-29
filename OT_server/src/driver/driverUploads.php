@@ -99,7 +99,7 @@
 
         if($goodConductImageName !== false){
             updateSqlStr();
-            $updateSqlStr .= "psv_license_image = ?";
+            $updateSqlStr .= "good_conduct_cert_image = ?";
             $values[] = $goodConductImageName;
         }
     }
