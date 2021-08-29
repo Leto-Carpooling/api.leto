@@ -4,6 +4,7 @@
     protected $nationalId,
             $regLicense,
             $driverState,
+            $online,
             $nationalIdImage = "pending",
             $regLicenseImage = "pending",
             $psvLicenseImage = "pending",
@@ -57,6 +58,8 @@
 
         $this->setNationalId($driverInfo["national_id"]);
         $this->setRegLicense($driverInfo['regular_license']);
+        $this->setDriverState($driverInfo["driver_state"]);
+        $this->setOnline($driverInfo["online_status"]);
         $this->setApprovalStatus($driverInfo["approval_status"]);
         $this->setUpdated($driverInfo["updated_on"]);
 
@@ -66,7 +69,7 @@
             return false;
         }
 
-        $this->setDriverState($driverDoc["driver_state"]);
+        
         $this->setNationalIdImage($driverDoc["national_id_image"]);
         $this->setRegLicenseImage($driverDoc["regular_license_image"]);
         $this->setPsvLicenseImage($driverDoc["psv_license_image"]);
@@ -412,6 +415,32 @@
                     $this->driverState = $driverState;
                     return true;
                 }
+
+                return false;
+    }
+
+    /**
+     * Get the value of online
+     */ 
+    public function isOnline()
+    {
+                return $this->online;
+    }
+
+    /**
+     * Set the value of online
+     *
+     * @return  self
+     */ 
+    public function setOnline($online)
+    {
+        $dbManager = new DbManager();
+        if(
+            $dbManager->update(Driver::DRIVER_TABLE, "online_status = ?", [$online], Driver::DRIVER_ID . "= ?", [$this->id])
+        ){
+            $this->online = $online;
+            return true;
+        }
 
                 return false;
     }

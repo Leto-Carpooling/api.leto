@@ -190,6 +190,16 @@
         }
 
         /**
+         * This function assigns a driver to the group
+         */
+        public function assignDriver($driverId){
+            if(empty($this->id)) return false;
+
+            $dbManager = new DbManager();
+            return $dbManager->update(RideGroup::GRP_TABLE, "driverId = ?", [$driverId], RideGroup::GRP_TABLE_ID." = ?", [$this->id]);
+        }
+
+        /**
          * Get the value of id
          */ 
         public function getId()

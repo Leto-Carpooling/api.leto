@@ -47,6 +47,7 @@
  $groupExists = true;
  $groups = false;
  $addedToGroup = false;
+ $trials = 0;
 
  //try until we add the ride to a group
  while(!$addedToGroup){
@@ -118,6 +119,12 @@
          );
      }
      
+     $trials++;
+     if($trials >= 1000){
+         exit(
+            Response::makeResponse("UAGRE", "Unable to group ride. please try again")
+         );
+     }
  }
  
 

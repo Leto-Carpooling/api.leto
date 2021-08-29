@@ -62,6 +62,7 @@ CREATE TABLE `driver_information` (
   `driverId` bigint unsigned not null primary key,
   `national_id` varchar(100) not null,
   `driver_state` TINYINT UNSIGNED not null DEFAULT 0,
+  `online_status` TINYINT UNSIGNED not null DEFAULT 0,
   `regular_license` varchar(100) not null,
   `approval_status` enum("declined", "pending", "approved") not null,
   `created_on` datetime default current_timestamp,
@@ -136,3 +137,20 @@ CREATE TABLE `ride` (
   FOREIGN KEY (`routeId` ) REFERENCES `route`(`id`) ON DELETE CASCADE,
   FOREIGN KEY (`riderId`) REFERENCES `user`(`id`) ON DELETE CASCADE
 );
+
+
+CREATE TABLE `ride_assigner_queue` (
+  `id` bigint unsigned not null primary key auto_increment,
+  `s_lat` float not null,
+  `s_long` float not null,
+  `e_lat` float not null,
+  `e_long` float not null,
+  `created_on` datetime default current_timestamp 
+);
+
+CREATE TABLE `ride_manager_token`(
+  `id` bigint unsigned not null primary key auto_increment,
+  `ra_token` varchar (255) not null,
+  `created_on` datetime default current_timestamp,
+  `updated_on` datetime default current_timestamp on update current_timestamp
+)
