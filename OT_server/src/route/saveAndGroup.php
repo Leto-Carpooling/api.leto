@@ -81,6 +81,7 @@
             "locations" => [],
             "timer" => $routePoints->groupTimer,
             "onlineStatus" => [],
+            "driver"=> 0
          ]);
 
          $rideId = RideGroup::makeAndGroupRide($groupId, $userId);

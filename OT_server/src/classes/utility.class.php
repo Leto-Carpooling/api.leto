@@ -226,6 +226,19 @@
                     }
               }
           }
+
+          public static function printMatrix($matrix){
+            
+            echo "\n---------------------------\n";
+              for($i = 0; $i < count($matrix); $i++){
+                  $length = count($matrix[$i]); 
+                  for($j = 0; $j < $length; $j++){
+                      echo $matrix[$i][$j]. "| ";
+                  }
+                  echo "\n";
+              }
+            echo "\n---------------------------\n";
+          }
     }
 
 ?>

@@ -4,9 +4,9 @@
   */
 
 use yidas\googleMaps\Client;
- use Kreait\Firebase\Factory;
 
- class RideAssigner{
+
+class RideAssigner{
      /**
       * These increments separates the assigners from each other.
       */
@@ -21,14 +21,13 @@ use yidas\googleMaps\Client;
             $startLongitude,
             $endLatitude,
             $endLongitude,
-            $factory,
-            $gMaps,
-            $firebaseDb;
+            $gMaps;
 
       private $groupIds,
               $groupLatLngs,
               $driverIds,
-              $matrix;
+              $matrix,
+              $groupSizes;
 
             /**
              * Pass in the latitude and longitude of the point to which a driver is to be assigned.
@@ -39,42 +38,78 @@ use yidas\googleMaps\Client;
                   $this->startLongitude = floor($longitude/RideAssigner::LONG_INCREMENT) * RideAssigner::LONG_INCREMENT;
                   $this->endLatitude = $this->startLatitude + RideAssigner::LAT_INCREMENT;
                   $this->endLongitude = $this->startLongitude + RideAssigner::LONG_INCREMENT;
-                  
-                  $this->factory = (new Factory())->withServiceAccount(__DIR__."/../includes/". LETO_FB_JSON);
-                  $this->factory = $this->factory->withDatabaseUri(LETO_NOSQL_URI);
-      
-                  $this->firebaseDb = $this->factory->createDatabase();
                   $this->gMaps = new Client(["key" => G_MAP_API_KEY]);
                   $this->groupIds = $this->driverIds = $this->groupLatLngs = $this->driverLatLngs = $this->matrix = [];
+
+                  //get the maximum groupsize under this
+                  $dbManager = new DbManager();
+                  $groupTable = RideGroup::GRP_TABLE;
+                  $rideTable = Ride::RIDE_TABLE;
+                  $groupTableId = RideGroup::GRP_TABLE_ID;
+                  $rideTableId = Ride::RIDE_TABLE_ID;
+                  $this->groupSizes = [];
+
+                  $dbManager->setFetchAll(true);
+                  $sizes = $dbManager->query("`$groupTable` inner join `$rideTable` on $groupTableId = groupId", ["DISTINCT COUNT($rideTableId) as num_rides"], "s_lat >= ? AND s_lat < ? AND s_long >= ? AND s_long < ? group by (num_rides) order by num_rides DESC", [$this->startLatitude, $this->endLatitude, $this->startLongitude, $this->endLongitude], false);
+
+                  if($sizes !== false){
+                        foreach($sizes as $size){
+                              $this->groupSizes[] = $size["num_rides"];
+                        }
+                  }
             }
 
             /**
              * Assigns drivers to riders using the hungarian algorithm
              */
-            public function assignDrivers(){
-                  $optimalResult = false;
-                  $this->populateMatrix();
-                  
-                  while(!$optimalResult){
-                        //row reduction
-                        $this->reduce(RideAssigner::ROW);
-                        
-                        //column reduction
-                        $this->reduce(RideAssigner::COLUMN);
+            public function assign(){
 
-                        //check zeros
-                        $zeroData = $this->checkZeros();
+                  //assign based of the group sizes
+                  while (count($this->groupSizes) > 0) {
 
-                        if(count($zeroData) < count($this->matrix)){
+                      $optimalResult = false;
+                      $this->populateMatrix();
+
+                      while (!$optimalResult) {
+                          $this->reduce(RideAssigner::ROW);
+                          $this->reduce(RideAssigner::COLUMN);
+
+                          //check zeros
+                          $zeroData = $this->checkZeros();
+
+                          if (count($zeroData["zerosPositions"]) < count($this->matrix)) {
                               //handle undeleted cells
                               $this->handleUndeletedCells($zeroData);
                               continue;
-                        }
+                          }
 
-                        $optimalResult = true;
-                        //assign the drivers
-                        
+                          $optimalResult = true;
+                          //assign the drivers
+                          //driver i assigned j group j
+                          $assignments = $zeroData["zerosPositions"];
+                          $fbManager = new FirebaseManager();
 
+                          foreach ($assignments as $assignment) {
+                              $groupId = $this->groupIds[$assignment[1]];
+                              $driverId = $this->driverIds[$assignment[0]];
+                              if ($groupId == 0 || $driverId == 0) {
+                                  continue;
+                              }
+
+                              $group = new RideGroup($this->groupIds[$assignment[1]]);
+                              if ($group->assignDriver($driverId)) {
+                                  $groupUrl = "groups/gid-$groupId/driver";
+                                  $fbManager->set($groupUrl, $driverId);
+
+                                  $driverUrl = "drivers/did-$driverId";
+                                  $fbManager->set("$driverUrl/assignedGroup", $groupId);
+                                  $fbManager->set("$driverUrl/arrived", false);
+                              }
+                          }
+                          break;
+                      }
+
+                      array_shift($this->groupSizes);
                   }
 
             }
@@ -86,8 +121,12 @@ use yidas\googleMaps\Client;
              */
             public function fillGroupData(DbManager &$dbManager){
                   $dbManager->setFetchAll(true);
+                  $groupTable = RideGroup::GRP_TABLE;
+                  $rideTable = Ride::RIDE_TABLE;
+                  $groupTableId = RideGroup::GRP_TABLE_ID;
+                  $rideTableId = Ride::RIDE_TABLE_ID;
 
-                  $groups = $dbManager->query(RideGroup::GRP_TABLE, ["*"], "s_lat >= ? AND s_lat < ? AND s_long >= ? AND s_long < ?", [$this->startLatitude, $this->endLatitude, $this->startLongitude, $this->endLongitude]);
+                  $groups = $dbManager->query("(SELECT $groupTable.*, count($rideTableId) as num_rides from $groupTable inner join $rideTable on $groupTableId = groupId) as counted_rides_group", ["*"], "s_lat >= ? AND s_lat < ? AND s_long >= ? AND s_long < ? AND num_rides >= ?", [$this->startLatitude, $this->endLatitude, $this->startLongitude, $this->endLongitude, $this->groupSizes[0]]);
 
                   if($groups == false or count($groups)){
                         return;
@@ -106,7 +145,16 @@ use yidas\googleMaps\Client;
              */
             public function fillDriverData(DbManager &$dbManager){
                   $dbManager->setFetchAll(true);
-                  $drivers = $dbManager->query(Driver::DRIVER_LOC_TABLE. " inner join ". Driver::DRIVER_TABLE. " on ". Driver::DRIVER_ID. " = ". Driver::DRIVER_LOC_ID, [Driver::DRIVER_LOC_TABLE.".driverId"], "c_lat >= ? and c_lat < ? and c_long >= ? and c_long < ? and online_status > ?", [
+                  $driverTable = Driver::DRIVER_TABLE;
+                  $driverLocTable = Driver::DRIVER_LOC_TABLE;
+                  $driverTableId = Driver::DRIVER_ID;
+                  $driverLocTableId = Driver::DRIVER_LOC_ID;
+                  $vehicleTable = Vehicle::VEHICLE_TABLE;
+
+                  $drivers = $dbManager->query(
+                        "driverId from (SELECT driverId from `$vehicleTable` inner join `$driverTable` on $driverTableId = $vehicleTable.driverId where capacity >= ?) as vehicle_driver inner join $driverLocTable on $driverLocTableId = driverId", 
+                        ["driverId"], "c_lat >= ? and c_lat < ? and c_long >= ? and c_long < ? and online_status > ?", [
+                        $this->groupSizes[0],
                         $this->startLatitude,
                         $this->endLatitude,
                         $this->startLongitude,
@@ -171,13 +219,14 @@ use yidas\googleMaps\Client;
                                                       $lowest = 0;
                                                       break;
                                                 }
-                                                $lowest = $lowest > $this->matrix[$i][$j]?
+                                                $lowest = ($lowest > $this->matrix[$i][$j])?
                                                           $this->matrix[$i][$j]:$lowest;
                                           }
 
                                           $minimums[] = $lowest;
                                     }
 
+                              
                                     //subtract the lowest
                                     for($i = 0; $i < $length; $i++){
                                           for($j = 0; $j < $length; $j++){
@@ -242,18 +291,16 @@ use yidas\googleMaps\Client;
                               }
 
                               if(count($currentZero) > 1){
-                                    $currentZero = [];
                                     break;
                               }
-
-                              if($j == ($length - 1)){
-                                    $cancelledColumns[$currentZero[0][1]] = $currentZero[0][1];
-                                    $zeros[] = $currentZero[0];
-
-                                    $currentZero = [];
-                              }
-
                         }
+
+                        if(count($currentZero) == 1){
+                              $cancelledColumns[$currentZero[0][1]] = $currentZero[0][1];
+                              $zeros[] = $currentZero[0];
+                        }
+
+                        $currentZero = [];
                   }
 
                   //check the columns and cancel the rows
@@ -276,22 +323,20 @@ use yidas\googleMaps\Client;
                               }
 
                               if(count($currentZero) > 1){
-                                    $currentZero = [];
                                     break;
                               }
 
-                              if($j == ($length - 1)){
-                                    $cancelledRows[$currentZero[0][0]] = $currentZero[0][0];
-                                    $zeros[] = $currentZero[0];
-                                    
-                                    $currentZero = [];
-                              }
-
                         }
+
+                        if(count($currentZero) == 1){
+                              $cancelledRows[$currentZero[0][0]] = $currentZero[0][0];
+                              $zeros[] = $currentZero[0]; 
+                        }
+                        $currentZero = [];
                   }
                    
                   return [
-                        "cancelledRows " => $cancelledRows,
+                        "cancelledRows" => $cancelledRows,
                         "cancelledColumns" => $cancelledColumns,
                         "zerosPositions" => $zeros
                   ];
@@ -302,6 +347,7 @@ use yidas\googleMaps\Client;
              */
 
             private function handleUndeletedCells($zeroData){
+                  
                   $minimum = $this->matrix[0][0];
                   $length = count($this->matrix);
 
@@ -331,7 +377,7 @@ use yidas\googleMaps\Client;
                               }
 
                               if(!(isset($cancelledColumns[$j]) || isset($cancelledRows[$i]))){
-                                    $this->matrix[$i][$j] += $minimum;
+                                    $this->matrix[$i][$j] -= $minimum;
                               }
                              
                         }
@@ -357,7 +403,8 @@ use yidas\googleMaps\Client;
              * The cost depends on the duration
              */
             private function getCost($groupIdIndex, $driverId){
-                  $driverLoc = $this->firebaseDb->getReference("drivers/did-$driverId/cLocation")->getValue();
+                  $fbManager = new FirebaseManager();
+                  $driverLoc = $fbManager->ref("drivers/did-$driverId/cLocation")->getValue();
                   $driverLat = $driverLoc["latitude"];
                   $driverLong = $driverLoc["longitude"];
 
@@ -473,6 +520,26 @@ use yidas\googleMaps\Client;
             public function setEndLongitude($endLongitude)
             {
                         $this->endLongitude = $endLongitude;
+
+                        return $this;
+            }
+
+            /**
+             * Get the value of groupSize
+             */ 
+            public function getGroupSizes()
+            {
+                        return $this->groupSizes;
+            }
+
+            /**
+             * Set the value of groupSize
+             *
+             * @return  self
+             */ 
+            public function setGroupSizes($groupSizes)
+            {
+                        $this->groupSizes = $groupSizes;
 
                         return $this;
             }
