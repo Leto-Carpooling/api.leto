@@ -63,8 +63,18 @@ use yidas\googleMaps\Client;
                         $this->reduce(RideAssigner::COLUMN);
 
                         //check zeros
+                        $zeroData = $this->checkZeros();
 
-                        //handle undeleted cells
+                        if(count($zeroData) < count($this->matrix)){
+                              //handle undeleted cells
+                              $this->handleUndeletedCells($zeroData);
+                              continue;
+                        }
+
+                        $optimalResult = true;
+                        //assign the drivers
+                        
+
                   }
 
             }
@@ -212,11 +222,121 @@ use yidas\googleMaps\Client;
             {
                   $cancelledRows = [];
                   $cancelledColumns = [];
-                  $indexToCancel = -1;
+
                   $length = count($this->matrix);
-                  
+                  $zeros = [];
+                  $currentZero = [];
+
                   //check the rows and cancel the columns
+                  for($i = 0; $i < $length; $i++){
+                        
+                        for($j = 0; $j < $length; $j++){
+
+                              if(isset($cancelledColumns[$j]))
+                              {
+                                    continue;
+                              }
+
+                              if($this->matrix[$i][$j] == 0){
+                                    $currentZero[] = [$i, $j];
+                              }
+
+                              if(count($currentZero) > 1){
+                                    $currentZero = [];
+                                    break;
+                              }
+
+                              if($j == ($length - 1)){
+                                    $cancelledColumns[$currentZero[0][1]] = $currentZero[0][1];
+                                    $zeros[] = $currentZero[0];
+
+                                    $currentZero = [];
+                              }
+
+                        }
+                  }
+
+                  //check the columns and cancel the rows
+                  for($i = 0; $i < $length; $i++){
+
+                        if(isset($cancelledColumns[$i]))
+                        {
+                              continue;
+                        }
+                        
+                        for($j = 0; $j < $length; $j++){
+
+                              if(isset($cancelledRows[$j]))
+                              {
+                                    continue;
+                              }
+
+                              if($this->matrix[$j][$i] == 0){
+                                    $currentZero[] = [$j, $i];
+                              }
+
+                              if(count($currentZero) > 1){
+                                    $currentZero = [];
+                                    break;
+                              }
+
+                              if($j == ($length - 1)){
+                                    $cancelledRows[$currentZero[0][0]] = $currentZero[0][0];
+                                    $zeros[] = $currentZero[0];
+                                    
+                                    $currentZero = [];
+                              }
+
+                        }
+                  }
+                   
+                  return [
+                        "cancelledRows " => $cancelledRows,
+                        "cancelledColumns" => $cancelledColumns,
+                        "zerosPositions" => $zeros
+                  ];
+            }
+
+            /**
+             * Handle all undeleted cells
+             */
+
+            private function handleUndeletedCells($zeroData){
+                  $minimum = $this->matrix[0][0];
+                  $length = count($this->matrix);
+
+                  $cancelledColumns = $zeroData["cancelledColumns"];
+                  $cancelledRows = $zeroData["cancelledRows"];
                   
+                  for($i = 0; $i < $length; $i++){
+                        if(isset($cancelledRows[$i])){
+                              continue;
+                        }
+
+                        for($j = 0; $j < $length; $j++){
+                              if(isset($cancelledColumns[$j])){
+                                    continue;
+                              }
+                              $minimum = ($this->matrix[$i][$j] < $minimum)? $this->matrix[$i][$j]: $minimum;
+                        }
+                  }
+
+                  //subtract the minimum and add to intersection points
+                  for($i = 0; $i < $length; $i++){
+                        for($j = 0; $j < $length; $j++){
+                              
+                              if(isset($cancelledColumns[$j]) && isset($cancelledRows[$i])){
+                                    $this->matrix[$i][$j] += $minimum;
+                                    continue;
+                              }
+
+                              if(!(isset($cancelledColumns[$j]) || isset($cancelledRows[$i]))){
+                                    $this->matrix[$i][$j] += $minimum;
+                              }
+                             
+                        }
+                  }
+
             }
 
             /**
