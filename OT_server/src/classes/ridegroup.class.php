@@ -5,6 +5,8 @@
      * It is different from the zippedRoute in that it has no access to the real routes
      * meta data such as distance. It only contains route ids and group id.
      */
+ 
+    use Kreait\Firebase\Factory;
 
     class RideGroup{
         private $id,
@@ -48,6 +50,7 @@
                         }
                 }
             }
+
         }
 
         /**
@@ -151,7 +154,7 @@
             if($groupId == -1){
                 return -1;
             }
-
+            
             return $groupId;
         }
 
@@ -197,6 +200,21 @@
 
             $dbManager = new DbManager();
             return $dbManager->update(RideGroup::GRP_TABLE, "driverId = ?", [$driverId], RideGroup::GRP_TABLE_ID." = ?", [$this->id]);
+        }
+
+        /**
+         * Removes a ride from the group
+         */
+        public function removeRide($id, $idType = Ride::RIDE){
+            $dbManager = new DbManager();
+            $routeId = $id;
+
+            if($idType == Ride::RIDE){
+                $ride = new Ride($id);
+                $routeId = $ride->getRouteId();       
+            }
+
+            return $dbManager->delete(Route::ROUTE_TABLE, Route::ROUTE_TABLE_ID." = ?", [$routeId]);
         }
 
         /**

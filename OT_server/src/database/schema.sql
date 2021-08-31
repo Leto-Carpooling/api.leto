@@ -70,6 +70,14 @@ CREATE TABLE `driver_information` (
   FOREIGN KEY (`driverId`) REFERENCES `user`(`id`) on delete cascade
 );
 
+CREATE TABLE `driver_location` (
+  `driverId` bigint unsigned not null primary key,
+  `c_lat` float,
+  `c_long` float,
+  `updated_on` datetime default current_timestamp on update current_timestamp,
+  FOREIGN KEY (`driverId`) REFERENCES `driver_information`(`driverId`) on delete cascade
+);
+
 CREATE TABLE `driver_document` (
   `driverId` bigint unsigned not null primary key,
   `national_id_image` varchar(255) ,

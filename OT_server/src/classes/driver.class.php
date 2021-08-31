@@ -5,6 +5,9 @@
             $regLicense,
             $driverState,
             $online,
+            $currentLatitude,
+            $currentLongitude,
+            $locationLastUpdated,
             $nationalIdImage = "pending",
             $regLicenseImage = "pending",
             $psvLicenseImage = "pending",
@@ -32,7 +35,9 @@
     const DRIVER_TABLE = "driver_information",
           DRIVER_ID = "`driver_information`.`driverId`",
           DRIVER_DOC_TABLE = "driver_document",
-          DRIVER_DOC_ID = "`driver_document`.`driverId`";
+          DRIVER_DOC_ID = "`driver_document`.`driverId`",
+          DRIVER_LOC_TABLE = "driver_location",
+          DRIVER_LOC_ID = "`driver_location`.`driverId`";
 
     public function __construct($id = 0){
         parent::__construct($id);
@@ -62,6 +67,15 @@
         $this->setOnline($driverInfo["online_status"]);
         $this->setApprovalStatus($driverInfo["approval_status"]);
         $this->setUpdated($driverInfo["updated_on"]);
+
+        $driverLocInfo = $dbManager->query(Driver::DRIVER_LOC_TABLE, ["*"], Driver::DRIVER_LOC_ID. " = ?", [$id]);
+        if($driverLocInfo === false){
+            return false;
+        }
+
+        $this->setCurrentLatitude($driverLocInfo["c_lat"]);
+        $this->setCurrentLongitude($driverLocInfo["c_long"]);
+        $this->setLocationLastUpdated($driverLocInfo["updated_on"]);
 
         $driverDoc = $dbManager->query(DbManager::DRIVER_DOC_TABLE, ["*"], DbManager::DRIVER_DOC_ID . " = ?", [$id]);
 
@@ -102,16 +116,22 @@
      */
     protected function addDriver(){
         $dbManager = new DbManager();
-        if($dbManager->insert(DbManager::DRIVER_INFO_TABLE, 
-        [DbManager::DRIVER_INFO_ID, "national_id", "regular_license", "approval_status"], 
+        if($dbManager->insert(Driver::DRIVER_TABLE, 
+        [Driver::DRIVER_ID, "national_id", "regular_license", "approval_status"], 
         [$this->id, $this->nationalId, $this->regLicense, "pending"]) == -1){
             return false;
         }
 
-        if($dbManager->insert(DbManager::DRIVER_DOC_TABLE, 
-                             [DbManager::DRIVER_DOC_ID], 
+        if($dbManager->insert(Driver::DRIVER_LOC_TABLE, 
+        [Driver::DRIVER_LOC_ID], 
+        [$this->id]) == -1){
+            return false;
+        }
+
+        if($dbManager->insert(Driver::DRIVER_DOC_TABLE, 
+                             [Driver::DRIVER_DOC_ID], 
                              [$this->id]) == -1){
-            $dbManager->delete(DbManager::DRIVER_INFO_TABLE, DbManager::DRIVER_INFO_ID ." = ?", 
+            $dbManager->delete(Driver::DRIVER_TABLE, Driver::DRIVER_ID ." = ?", 
             [$this->id]);
             return false;
         }
@@ -185,6 +205,17 @@
         $this->approvalStatus = $status;
         $dbManager = new DbManager();
         return $dbManager->update(DbManager::DRIVER_INFO_TABLE, "approval_status = ? ", [$status], DbManager::DRIVER_INFO_ID . "= ?", [$this->id]);
+    }
+
+    /**
+     * Updates the driver location
+     * @param int $timestamp - time in millisecond returned from firebase.
+     */
+    public static function updateLocation($latitude, $longitude, $driverId, $timestamp){
+        $dbManager = new DbManager();
+        $date = date("Y-m-d H:i:s", ($timestamp/1000));
+
+        return $dbManager->update(Driver::DRIVER_LOC_TABLE, "c_lat = ?, c_long = ?, updated_on = ?", [$latitude, $longitude, $date], Driver::DRIVER_LOC_ID. " = ?", [$driverId]);
     }
 
     /**
@@ -443,6 +474,66 @@
         }
 
                 return false;
+    }
+
+    /**
+     * Get the value of currentLatitude
+     */ 
+    public function getCurrentLatitude()
+    {
+                return $this->currentLatitude;
+    }
+
+    /**
+     * Set the value of currentLatitude
+     *
+     * @return  self
+     */ 
+    public function setCurrentLatitude($currentLatitude)
+    {
+                $this->currentLatitude = $currentLatitude;
+
+                return $this;
+    }
+
+    /**
+     * Get the value of currentLongitude
+     */ 
+    public function getCurrentLongitude()
+    {
+                return $this->currentLongitude;
+    }
+
+    /**
+     * Set the value of currentLongitude
+     *
+     * @return  self
+     */ 
+    public function setCurrentLongitude($currentLongitude)
+    {
+                $this->currentLongitude = $currentLongitude;
+
+                return $this;
+    }
+
+    /**
+     * Get the value of locationLastUpdated
+     */ 
+    public function getLocationLastUpdated()
+    {
+                return $this->locationLastUpdated;
+    }
+
+    /**
+     * Set the value of locationLastUpdated
+     *
+     * @return  self
+     */ 
+    public function setLocationLastUpdated($locationLastUpdated)
+    {
+                $this->locationLastUpdated = $locationLastUpdated;
+
+                return $this;
     }
  }
 

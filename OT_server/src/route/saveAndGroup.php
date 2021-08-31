@@ -4,6 +4,7 @@
  */
 
  require_once("master.inc.php");
+ 
 
  $routePoints = $_POST["route-points"];
 
@@ -11,7 +12,9 @@
      exit(Response::UEO());
  }
 
+
  $dbManager = new DbManager();
+ $fbManager = new FirebaseManager();
 
  //delete any active route with this rider id
 
@@ -34,11 +37,18 @@
          $_groupId = $rideInfo["groupId"];
 
          $deleteRoutes[] = $_routeId;
+        
          if(!$stmt2->execute([$_routeId])){
              continue;
          }
 
+         $fbManager->remove("routes/steps/rid-$_routeId");
+         $fbManager->remove("routes/legs/rid-$_routeId");
+         $fbManager->remove("routes/gwp/rid-$_routeId");
+         $fbManager->remove("routes/rid-$_routeId");
+
          if($stmt1->execute([$_groupId, $_groupId]) && $stmt1->rowCount() > 0){
+            $fbManager->remove("groups/gid-$_groupId");
             $deleteGroups[] = $_groupId;
          }
      }
@@ -55,14 +65,25 @@
     if($routePoints->rideType != 1){
         $routeGrouper = new RouteGroupper();
         $groups = $routeGrouper->findGroup($routePoints->start_latitude, $routePoints->start_longitude, $routePoints->end_latitude, $routePoints->end_longitude);
+        
      }
     
      
      if($groups === false || count($groups) < 1){
          $groupExists = false;
          $groupId = RideGroup::makeNewGroup($routePoints->start_latitude, $routePoints->start_longitude, $routePoints->end_latitude, $routePoints->end_longitude, $routePoints->rideType);
-         $rideId = RideGroup::makeAndGroupRide($groupId, $userId);
+         $fbManager->set("groups/gid-$groupId", [
+            "startPlaceId" => $routePoints->startPlaceId,
+            "endPlaceId" => $routePoints->endPlaceId,
+            "usersIndex" => [],
+            "pickUpPointId" => $routePoints->startPlaceId,
+            "fares" => [],
+            "locations" => [],
+            "timer" => $routePoints->groupTimer,
+            "onlineStatus" => [],
+         ]);
 
+         $rideId = RideGroup::makeAndGroupRide($groupId, $userId);
      }
      else{
         //cycle the array twice to add the ride to a group
@@ -84,6 +105,7 @@
             $rideId = RideGroup::makeAndGroupRide($group->getId(), $userId);
     
             if($rideId !== false){
+                $groupId = $group->getId();
                 break;
             }
     
@@ -93,6 +115,8 @@
     
      if($rideId !== false){
         $addedToGroup = true;
+        $fbManager->set("groups/gid-$groupId/usersIndex/uid-$userId", true);
+        $fbManager->set("groups/gid-$groupId/arrivals/uid-$userId", -1);
      }
     
      if($addedToGroup){
