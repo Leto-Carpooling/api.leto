@@ -240,9 +240,13 @@ class DbManager implements DatabaseInterface{
 
     /**
      * Get the value of dbConnection
+	 * @return \PDO
      */ 
     public function getDbConnection()
     {
+		if(!$this->dbConnection){
+			$this->connect();
+		}
         return $this->dbConnection;
     }
 

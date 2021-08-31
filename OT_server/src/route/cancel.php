@@ -25,7 +25,7 @@
         $fbManager->remove("routes/rid-$routeId");
 
         //remove from group
-        $groupUrl = "groups/gid-$groupId";
+        $groupUrl = "groups/gid-{$group->getId()}";
         $fbManager->remove("$groupUrl/usersIndex/uid-$userId");
         $fbManager->remove("$groupUrl/fares/uid-$userId");
         $fbManager->remove("$groupUrl/locations/uid-$userId");

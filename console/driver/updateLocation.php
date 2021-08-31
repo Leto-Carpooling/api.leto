@@ -3,28 +3,45 @@
     require("master.inc.php");
 
     //updates the driver locations
-    use Kreait\Firebase\Factory;
+    $fbManager = new FirebaseManager();
     
-    
-    $factory = (new Factory())->withServiceAccount(__DIR__."/../../ot_server/src/includes/". LETO_FB_JSON);
-    
-    $factory = $factory->withDatabaseUri(LETO_NOSQL_URI);
+    $driverTable = Driver::DRIVER_TABLE;
+    $driverLocTable = Driver::DRIVER_LOC_TABLE;
+    $driverTableId = Driver::DRIVER_ID;
+    $driverLocId = Driver::DRIVER_LOC_ID;
 
-    $firebaseDb = $factory->createDatabase();
-    
+
+    $sqlForQuery = "SELECT $driverLocTable.* from $driverLocTable inner join $driverTable on $driverTableId = $driverLocId where online_status > 0";
+
+    $sqlForStatus = "UPDATE $driverTable set online_status = false where $driverTableId = ?";
+
+    $updateSql = "UPDATE $driverLocTable set c_lat = ? , c_long = ?, updated_on = ? where $driverLocId = ?";
+
+    $dbManager = new DbManager();
+    $conn = $dbManager->getDbConnection();
+
+    $stmt1 = $conn->prepare($sqlForQuery);
+    $stmt2 = $conn->prepare($sqlForStatus);
+    $stmt3 = $conn->prepare($updateSql);
+   
     while(true){
-        $dbManager = new DbManager();
-        $dbManager->setFetchAll(true);
-        $allDriversInfo = $dbManager->query(Driver::DRIVER_LOC_TABLE. " inner join ". Driver::DRIVER_TABLE. " on ". Driver::DRIVER_ID. " = ". Driver::DRIVER_LOC_ID, [Driver::DRIVER_LOC_TABLE.".*"], "1 and online_status > ?", [0], false);
+        
+        if(!$stmt1->execute()){
+            echo " An error occurred \n";
+            sleep(10);
+            continue;
+        }
+        
+        $allDriversInfo = $stmt1->fetchAll();
 
-        if($allDriversInfo === false || count($allDriversInfo) < 1){
-            echo "No driver to update";
-            sleep(600);//sleep for 10 minutes
+        if(count($allDriversInfo) < 1){
+            echo " No Drivers to update \n";
+            sleep(60);
             continue;
         }
 
         foreach($allDriversInfo as $driverInfo){
-            $fbInfo = $firebaseDb->getReference("drivers/did-".$driverInfo["driverId"]."/cLocation")->getValue();
+            $fbInfo = $fbManager->ref("drivers/did-".$driverInfo["driverId"]."/cLocation")->getValue();
 
             $latitude = $fbInfo["latitude"];
             $longitude = $fbInfo["longitude"];
@@ -35,15 +52,16 @@
 
             //ten minutes offline changes your status to offline
             if($lastUpdated > 600000){
-                $dbManager->update(Driver::DRIVER_TABLE, "online_status = false", [] ,Driver::DRIVER_ID . "= ?", [$driverInfo["driverId"]]);
+                $stmt2->execute([$driverInfo["driverId"]]);
                 continue;
             }
 
-            Driver::updateLocation($latitude, $longitude, $driverInfo["driverId"], $updatedAt);
+            $date = date("Y-m-d H:i:s", ($updatedAt/1000));
+            $stmt3->execute([$latitude, $longitude, $date]);
         }
 
         echo "Next check after 5 seconds";
-        sleep(5);
+        sleep(10);
     }
 
 ?>

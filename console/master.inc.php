@@ -1,5 +1,14 @@
 <?php
 
+if(function_exists("getallheaders")){
+   $headers = getallheaders();
+   
+   if($headers !== false && count((array)$headers) > 0){
+      exit();
+   }
+}
+
+
 require(__DIR__."/../ot_server/vendor/autoload.php");
 require(__DIR__. "/../ot_server/src/includes/passwords.inc.php");
 /** 

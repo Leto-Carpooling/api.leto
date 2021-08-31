@@ -28,9 +28,11 @@ require("master.inc.php");
  $distributedFare = $group->distributeFare($actualFare);
  $fbManager = new FirebaseManager();
  $fareUrl = "groups/gid-$groupId/fares";
- $faresRef = $fbManager->ref($url);
+ $faresRef = $fbManager->ref($fareUrl);
 
- foreach($faresRef->getValue() as $uid => $fare){
+ $fares = $faresRef->getValue();
+
+ foreach($fares as $uid => $fare){
     $fbManager->set("$fareUrl/$uid", $distributedFare);
  }
  
