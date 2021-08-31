@@ -62,7 +62,7 @@
       /**
        * Load the RA Queue  
        */
-      private function loadQueue(){
+      public function loadQueue(){
         $dbManager = new DbManager();
         $dbManager->setFetchAll(true);
         $rAQueue = $dbManager->query(RAManager::RA_QUEUE_TABLE, ["*"], "1 order by created_on DESC", []);
@@ -78,8 +78,9 @@
        */
       public function disburseRAs(){
         foreach($this->rAQueue as $rAInfo){
-
+          echo $this->startRA($rAInfo);
         }
+        $this->emptyQueue();
       }
 
       private function startRA($rAInfo){
@@ -87,8 +88,20 @@
         $sLong = $rAInfo["s_long"];
         $eLat = $rAInfo["e_lat"];
         $eLong = $rAInfo["s_long"];
-        
-        $cmd = "php assignDrivers.php $sLat $sLong $eLat $eLong";
+        $id = $rAInfo["id"];
+        $cmd = "php assignDrivers.php $this->token $id $sLat $sLong $eLat $eLong > output 2>&1";
+        exec($cmd);
+        // if ( substr(php_uname(), 0, 7) == "Windows" )
+        // {
+        //     //windows
+        //     pclose(popen("start /B $cmd", "r"));
+        // }
+        // else
+        // {
+        //     //linux
+        //     shell_exec($cmd);
+        // }
+        return "started";
       }
 
       /**
@@ -107,8 +120,20 @@
       public function setToken($token)
       {
             $this->token = $token;
-
             return $this;
+      }
+
+      private function emptyQueue(){
+        $dbManager = new DbManager();
+        $index = 0;
+
+        while(!$dbManager->delete(RAManager::RA_QUEUE_TABLE, "1", [])){
+          $index++;
+          if($index > 1000){
+            return false;
+          }
+        }
+        return true;
       }
   }
 

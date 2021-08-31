@@ -12,6 +12,7 @@
     }
 
     $vehicle = $newDriver->getVehicle();
+    
     if(empty($vehicle->getId())){
         exit(Response::VNIE());
     }

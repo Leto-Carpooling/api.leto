@@ -5,7 +5,7 @@
         /**
          * Creates the appropriate user object which is either a rider, driver, or admin
          * @param int $userId
-         * @return UserInterface|bool
+         * @return UserInterface|Rider|bool
          */
         public static function createUser($user_id){
             $dbManager = new DbManager();

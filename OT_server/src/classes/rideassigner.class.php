@@ -36,7 +36,7 @@ class RideAssigner{
             {
                   $this->startLatitude = floor($latitude/RideAssigner::LAT_INCREMENT) * RideAssigner::LAT_INCREMENT;
                   $this->startLongitude = floor($longitude/RideAssigner::LONG_INCREMENT) * RideAssigner::LONG_INCREMENT;
-                  $this->endLatitude = $this->startLatitude + RideAssigner::LAT_INCREMENT;
+                  $this->endLatitude =  $this->startLatitude + RideAssigner::LAT_INCREMENT;
                   $this->endLongitude = $this->startLongitude + RideAssigner::LONG_INCREMENT;
                   $this->gMaps = new Client(["key" => G_MAP_API_KEY]);
                   $this->groupIds = $this->driverIds = $this->groupLatLngs = $this->driverLatLngs = $this->matrix = [];
@@ -50,7 +50,7 @@ class RideAssigner{
                   $this->groupSizes = [];
 
                   $dbManager->setFetchAll(true);
-                  $sizes = $dbManager->query("`$groupTable` inner join `$rideTable` on $groupTableId = groupId", ["DISTINCT COUNT($rideTableId) as num_rides"], "s_lat >= ? AND s_lat < ? AND s_long >= ? AND s_long < ? group by (num_rides) order by num_rides DESC", [$this->startLatitude, $this->endLatitude, $this->startLongitude, $this->endLongitude], false);
+                  $sizes = $dbManager->query("`$groupTable` inner join `$rideTable` on $groupTableId = groupId", ["DISTINCT COUNT($rideTableId) as num_rides", "groupId"], "s_lat >= ? AND s_lat < ? AND s_long >= ? AND s_long < ? group by (groupId) order by num_rides DESC", [$this->startLatitude, $this->endLatitude, $this->startLongitude, $this->endLongitude], false);
 
                   if($sizes !== false){
                         foreach($sizes as $size){
@@ -66,11 +66,16 @@ class RideAssigner{
 
                   //assign based of the group sizes
                   while (count($this->groupSizes) > 0) {
+                      $trials = 0;
 
                       $optimalResult = false;
                       $this->populateMatrix();
 
                       while (!$optimalResult) {
+                          if($trials > 500){
+                                break;
+                          }
+
                           $this->reduce(RideAssigner::ROW);
                           $this->reduce(RideAssigner::COLUMN);
 
@@ -80,6 +85,7 @@ class RideAssigner{
                           if (count($zeroData["zerosPositions"]) < count($this->matrix)) {
                               //handle undeleted cells
                               $this->handleUndeletedCells($zeroData);
+                              $trials++;
                               continue;
                           }
 
@@ -152,9 +158,10 @@ class RideAssigner{
                   $vehicleTable = Vehicle::VEHICLE_TABLE;
 
                   $drivers = $dbManager->query(
-                        "driverId from (SELECT driverId from `$vehicleTable` inner join `$driverTable` on $driverTableId = $vehicleTable.driverId where capacity >= ?) as vehicle_driver inner join $driverLocTable on $driverLocTableId = driverId", 
+                        "driverId from (SELECT driverId from `$vehicleTable` inner join `$driverTable` on $driverTableId = $vehicleTable.driverId where capacity >= ? and approval_status = ?) as vehicle_driver inner join $driverLocTable on $driverLocTableId = driverId", 
                         ["driverId"], "c_lat >= ? and c_lat < ? and c_long >= ? and c_long < ? and online_status > ?", [
                         $this->groupSizes[0],
+                        "approved",
                         $this->startLatitude,
                         $this->endLatitude,
                         $this->startLongitude,
@@ -397,6 +404,20 @@ class RideAssigner{
                   }
 
                   return false;
+            }
+
+            public function addToQueue(){
+                  $dbManager = new DbManager();
+                  $trials = 0;
+                  do{
+                        $id = $dbManager->insert(RAManager::RA_QUEUE_TABLE, ["s_lat", "s_long", "e_lat", "e_long"], [$this->startLatitude, $this->startLongitude, $this->endLatitude, $this->endLongitude]);
+                        $trials++;
+                        if($trials > 100){
+                              return false;
+                        }
+                  }while($id == -1);
+
+                  return true;
             }
 
             /**

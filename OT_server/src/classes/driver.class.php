@@ -68,15 +68,6 @@
         $this->setApprovalStatus($driverInfo["approval_status"]);
         $this->setUpdated($driverInfo["updated_on"]);
 
-        $driverLocInfo = $dbManager->query(Driver::DRIVER_LOC_TABLE, ["*"], Driver::DRIVER_LOC_ID. " = ?", [$id]);
-        if($driverLocInfo === false){
-            return false;
-        }
-
-        $this->setCurrentLatitude($driverLocInfo["c_lat"]);
-        $this->setCurrentLongitude($driverLocInfo["c_long"]);
-        $this->setLocationLastUpdated($driverLocInfo["updated_on"]);
-
         $driverDoc = $dbManager->query(DbManager::DRIVER_DOC_TABLE, ["*"], DbManager::DRIVER_DOC_ID . " = ?", [$id]);
 
         if($driverDoc === false){
@@ -96,6 +87,20 @@
         }
 
         $this->setVehicle($vehicle);
+
+        if(!$this->approvalStatus == "approved"){
+            return true;
+        }
+
+        $driverLocInfo = $dbManager->query(Driver::DRIVER_LOC_TABLE, ["*"], Driver::DRIVER_LOC_ID. " = ?", [$id]);
+        
+        if($driverLocInfo === false){
+            return false;
+        }
+
+        $this->setCurrentLatitude($driverLocInfo["c_lat"]);
+        $this->setCurrentLongitude($driverLocInfo["c_long"]);
+        $this->setLocationLastUpdated($driverLocInfo["updated_on"]);
     }
 
     /**
