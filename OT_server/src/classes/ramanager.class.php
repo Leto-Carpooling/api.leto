@@ -65,7 +65,7 @@
       public function loadQueue(){
         $dbManager = new DbManager();
         $dbManager->setFetchAll(true);
-        $rAQueue = $dbManager->query(RAManager::RA_QUEUE_TABLE, ["*"], "1 order by created_on DESC", []);
+        $rAQueue = $dbManager->query(RAManager::RA_QUEUE_TABLE, ["*"], "1 order by created_on ASC", []);
         if($rAQueue === false){
           return false;
         }

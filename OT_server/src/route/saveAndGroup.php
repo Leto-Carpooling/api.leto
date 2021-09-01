@@ -35,6 +35,7 @@
      foreach($deleteRouteIds as $rideInfo){
          $_routeId = $rideInfo["routeId"];
          $_groupId = $rideInfo["groupId"];
+         $_riderId = $rideInfo["riderId"];
 
          $deleteRoutes[] = $_routeId;
         
@@ -46,6 +47,11 @@
          $fbManager->remove("routes/legs/rid-$_routeId");
          $fbManager->remove("routes/gwp/rid-$_routeId");
          $fbManager->remove("routes/rid-$_routeId");
+         $fbManager->remove("groups/gid-$_groupId/fares/uid-$_riderId");
+         $fbManager->remove("groups/gid-$_groupId/usersIndex/uid-$_riderId");
+         $fbManager->remove("groups/gid-$_groupId/locations/uid-$_riderId");
+         $fbManager->remove("groups/gid-$_groupId/onlineStatus/uid-$_riderId");
+         $fbManager->remove("groups/gid-$_groupId/arrivals/uid-$_riderId");
 
          if($stmt1->execute([$_groupId, $_groupId]) && $stmt1->rowCount() > 0){
             $fbManager->remove("groups/gid-$_groupId");
@@ -53,6 +59,8 @@
          }
      }
  }
+
+ $dbManager->delete(Ride::RIDE_TABLE, "riderId = ? and completed = 0", [$userId]);
 
  $groupExists = true;
  $groups = false;
@@ -83,7 +91,7 @@
             "eLong" => $routePoints->end_longitude,
             "fares" => [],
             "locations" => [],
-            "timer" => $routePoints->groupTimer,
+            "timer" => ($routePoints->rideType == 0)? $routePoints->groupTimer: 0,
             "onlineStatus" => [],
             "driver"=> 0
          ]);

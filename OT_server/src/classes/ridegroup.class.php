@@ -213,8 +213,18 @@
                 $ride = new Ride($id);
                 $routeId = $ride->getRouteId();       
             }
-
-            return $dbManager->delete(Route::ROUTE_TABLE, Route::ROUTE_TABLE_ID." = ?", [$routeId]);
+            if($dbManager->delete(Route::ROUTE_TABLE, Route::ROUTE_TABLE_ID." = ?", [$routeId])){
+                $new = [];
+                foreach($this->routeIds as $key => $rid){
+                    if($rid != $routeId){
+                        $new[] = $routeId;
+                    }
+                }
+                $this->routeIds = $new;
+                
+                return true;
+            }
+            return false;
         }
 
         /**

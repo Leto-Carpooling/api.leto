@@ -132,7 +132,7 @@ class RideAssigner{
                   $groupTableId = RideGroup::GRP_TABLE_ID;
                   $rideTableId = Ride::RIDE_TABLE_ID;
 
-                  $groups = $dbManager->query("(SELECT $groupTable.*, count($rideTableId) as num_rides from $groupTable inner join $rideTable on $groupTableId = groupId) as counted_rides_group", ["*"], "s_lat >= ? AND s_lat < ? AND s_long >= ? AND s_long < ? AND num_rides >= ?", [$this->startLatitude, $this->endLatitude, $this->startLongitude, $this->endLongitude, $this->groupSizes[0]]);
+                  $groups = $dbManager->query("(SELECT $groupTable.*, count($rideTableId) as num_rides from $groupTable inner join $rideTable on $groupTableId = groupId) as counted_rides_group", ["*"], "s_lat >= ? AND s_lat < ? AND s_long >= ? AND s_long < ? AND num_rides >= ? order by created_on ASC", [$this->startLatitude, $this->endLatitude, $this->startLongitude, $this->endLongitude, $this->groupSizes[0]]);
 
                   if($groups == false or count($groups)){
                         return;
@@ -158,7 +158,7 @@ class RideAssigner{
                   $vehicleTable = Vehicle::VEHICLE_TABLE;
 
                   $drivers = $dbManager->query(
-                        "driverId from (SELECT driverId from `$vehicleTable` inner join `$driverTable` on $driverTableId = $vehicleTable.driverId where capacity >= ? and approval_status = ?) as vehicle_driver inner join $driverLocTable on $driverLocTableId = driverId", 
+                        "driverId from (SELECT driverId from `$vehicleTable` inner join `$driverTable` on $driverTableId = $vehicleTable.driverId where capacity >= ? and approval_status = ? and online = 1) as vehicle_driver inner join $driverLocTable on $driverLocTableId = driverId", 
                         ["driverId"], "c_lat >= ? and c_lat < ? and c_long >= ? and c_long < ? and online_status > ?", [
                         $this->groupSizes[0],
                         "approved",
@@ -397,7 +397,8 @@ class RideAssigner{
              */
             public function isQueued(){
                   $dbManager = new DbManager();
-                  $info = $dbManager->query(RAManager::RA_QUEUE_TABLE, ["id"], "s_lat = ? AND e_lat = ? AND s_long = ? AND e_long = ?", [$this->startLatitude, $this->endLatitude, $this->startLongitude, $this->endLongitude]);
+
+                  $info = $dbManager->query(RAManager::RA_QUEUE_TABLE, ["id"], "Format(s_lat, 2) = FORMAT(?, 2) and FORMAT(e_lat, 2) =  FORMAT(?,2) and FORMAT(s_long, 2) = FORMAT(?,2) and FORMAT(e_long,2) = FORMAT(?, 2)", [$this->startLatitude, $this->endLatitude, $this->startLongitude, $this->endLongitude]);
 
                   if($info !== false){
                         return true;

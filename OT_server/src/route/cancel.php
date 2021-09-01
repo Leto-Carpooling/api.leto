@@ -14,7 +14,8 @@
 
     $group = new RideGroup($routeInfo->groupId);
 
-    if($group->removeRide($routeInfo->routeId)){
+
+    if($group->removeRide($routeInfo->routeId, Route::ROUTE)){
         $fbManager = new FirebaseManager();
         $routeId = $routeInfo->routeId;
 
@@ -31,6 +32,28 @@
         $fbManager->remove("$groupUrl/locations/uid-$userId");
         $fbManager->remove("$groupUrl/onlineStatus/uid-$userId");
         $fbManager->remove("$groupUrl/arrivals/uid-$userId");
+
+        $newGroup = new RideGroup($group->getId());
+
+        if(count($newGroup->getRouteIds()) > 0){
+            $fareCalculator = new FareCalculator($newGroup->getId());
+            $actualFare = $fareCalculator->calculateFare();
+            
+            if($actualFare === false){
+                exit(Response::UEO());
+            }
+           
+            $distributedFare = $newGroup->distributeFare($actualFare);
+            $fareUrl = "$groupUrl/fares";
+            $faresRef = $fbManager->ref($fareUrl);
+            $fares = $faresRef->getValue();
+    
+            foreach($fares as $uid => $fare){
+                $fbManager->set("$fareUrl/$uid", $distributedFare);
+            }
+        }
+
+        
 
         exit(
             Response::OK()
