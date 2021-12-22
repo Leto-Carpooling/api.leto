@@ -6,7 +6,6 @@
      * meta data such as distance. It only contains route ids and group id.
      */
  
-    use Kreait\Firebase\Factory;
 
     class RideGroup{
         private $id,

@@ -22,6 +22,7 @@
             json_encode(
                 [
                     "name" => $driver->getFirstName(). " ". $driver->getLastName(),
+                    "profileImage" => User::PROFILE_IMG_PATH."/".$driver->getProfileImage(),
                     "vehicle" => [
                         "model" => $driver->getVehicle()->getModel(),
                         "manufacturer" => $driver->getVehicle()->getManufacturer(),

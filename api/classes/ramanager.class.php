@@ -89,18 +89,18 @@
         $eLat = $rAInfo["e_lat"];
         $eLong = $rAInfo["s_long"];
         $id = $rAInfo["id"];
-        $cmd = "php assignDrivers.php $this->token $id $sLat $sLong $eLat $eLong > output 2>&1";
-        exec($cmd);
-        // if ( substr(php_uname(), 0, 7) == "Windows" )
-        // {
-        //     //windows
-        //     pclose(popen("start /B $cmd", "r"));
-        // }
-        // else
-        // {
-        //     //linux
-        //     shell_exec($cmd);
-        // }
+        $cmd = "php assignDrivers.php $this->token $id $sLat $sLong $eLat $eLong";
+        
+        if ( substr(php_uname(), 0, 7) == "Windows" )
+        {
+            //windows
+            pclose(popen("start /B $cmd > output 2>&1", "r"));
+        }
+        else
+        {
+            //linux
+            shell_exec("$cmd > /dev/null &");
+        }
         return "started";
       }
 
