@@ -3,10 +3,15 @@
  * This script saves the route in the database and returns the route id
  */
 
- require_once("master.inc.php");
+ require("master.inc.php");
  
-
+ # get route points
  $routePoints = $_POST["route-points"];
+ 
+ # get group privacy
+ $isPrivate = boolval($_POST["is-private"]);
+
+ 
 
  if(!$routePoints = json_decode($routePoints)){
      exit(Response::UEO());
@@ -18,9 +23,7 @@
 
  //delete any active route with this rider id
 
- $dbManager->setFetchAll(true);
-
- $deleteRouteIds = $dbManager->query(Ride::RIDE_TABLE, ["*"], "riderId = ? and completed = 0", [$userId]);
+ $deleteRouteIds = $dbManager->query(Ride::RIDE_TABLE, ["*"], "riderId = ? and completed = 0", [$userId], true, true);
 
  $deleteGroups = [];
  $deleteRoutes = [];
@@ -28,8 +31,8 @@
  if($deleteRouteIds !== false && count($deleteRouteIds) > 0){
      $pdo = $dbManager->getDbConnection();
 
-     $stmt1 =  $pdo->prepare("DELETE from ". RideGroup::GRP_TABLE . " where ". RideGroup::GRP_TABLE_ID. " = ? 
-     and NOT EXISTS (SELECT ". Ride::RIDE_TABLE_ID. " from " . Ride::RIDE_TABLE . " where groupId = ?)");
+    //  $stmt1 =  $pdo->prepare("DELETE from ". RideGroup::GRP_TABLE . " where ". RideGroup::GRP_TABLE_ID. " = ? 
+    //  and NOT EXISTS (SELECT ". Ride::RIDE_TABLE_ID. " from " . Ride::RIDE_TABLE . " where groupId = ?)");
      $stmt2 = $pdo->prepare("DELETE from ". Route::ROUTE_TABLE. " where ". Route:: ROUTE_TABLE_ID. " = ?");
 
      foreach($deleteRouteIds as $rideInfo){
@@ -52,11 +55,6 @@
          $fbManager->remove("groups/gid-$_groupId/locations/uid-$_riderId");
          $fbManager->remove("groups/gid-$_groupId/onlineStatus/uid-$_riderId");
          $fbManager->remove("groups/gid-$_groupId/arrivals/uid-$_riderId");
-
-         if($stmt1->execute([$_groupId, $_groupId]) && $stmt1->rowCount() > 0){
-            $fbManager->remove("groups/gid-$_groupId");
-            $deleteGroups[] = $_groupId;
-         }
      }
  }
 
@@ -73,13 +71,13 @@
     if($routePoints->rideType != 1){
         $routeGrouper = new RouteGroupper();
         $groups = $routeGrouper->findGroup($routePoints->start_latitude, $routePoints->start_longitude, $routePoints->end_latitude, $routePoints->end_longitude);
-        
      }
     
-     
+     //if no matching group was found
      if($groups === false || count($groups) < 1){
          $groupExists = false;
          $groupId = RideGroup::makeNewGroup($routePoints->start_latitude, $routePoints->start_longitude, $routePoints->end_latitude, $routePoints->end_longitude, $routePoints->rideType);
+
          $fbManager->set("groups/gid-$groupId", [
             "startPlaceId" => $routePoints->startPlaceId,
             "endPlaceId" => $routePoints->endPlaceId,
@@ -96,15 +94,18 @@
             "driver"=> 0
          ]);
 
-         $rideId = RideGroup::makeAndGroupRide($groupId, $userId);
+         $rideId = RideGroup::makeAndGroupRide($groupId, $userId, true);
      }
      else{
         //cycle the array twice to add the ride to a group
         $index = 0;
         while(true){
             $currentGroup = $groups[$index % count($groups)];
-    
             $group = new RideGroup($currentGroup["id"]);
+
+            //check if the group is full, if so, remove it from the suggested group list
+            //@todo - the max capacity of the vehicle nearby will be used instead of the 
+            //overall vehicle's max capacity
             if($group->getNumberOfRides() >= Vehicle::getMaxCapacity()){
                 unset($groups[$index]);
                 $groups = array_values($groups);

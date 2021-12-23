@@ -32,7 +32,9 @@ class DbManager implements DatabaseInterface{
 	 * @return mixed
 	 */
 	public function connect() {
-		    $env = Utility::getEnv();
+			if($this->dbConnection !== null) return;
+
+		    $env = isset($GLOBALS["env"])? $GLOBALS["env"] : Utility::getEnv();
 			$user = $env->dbUsername;
 			$pass = $env->dbPassword;
 			$dsn = "mysql:host=$this->dbHost;port=$this->dbPort;dbname=$this->dbName";
@@ -54,6 +56,7 @@ class DbManager implements DatabaseInterface{
 				);
 			} 
 			catch (\PDOException $e) {
+				# proper logging
 				echo $e->getMessage(). " Error occured while creating connection\n";
 				exit($e->getMessage());
 			}
@@ -78,15 +81,17 @@ class DbManager implements DatabaseInterface{
 		$sql = "SELECT " . implode (", ", $columns) ." from $table where $condition_string";
 		$this->setLastQuery($sql);
 
-            $stmt = $this->dbConnection->prepare($sql);
-            if($stmt->execute($condition_values)){
-                $result = ($this->fetchAll || $fetch_all)? $stmt->fetchAll() : $stmt->fetch();
-                $return = $result;
-            }
-            else{
-                $return = false;
-            }
-			return $return;
+		$stmt = $this->dbConnection->prepare($sql);
+		if($stmt->execute($condition_values)){
+			$result = ($this->fetchAll || $fetch_all)? $stmt->fetchAll() : $stmt->fetch();
+			$return = $result;
+		}
+		else{
+			$return = false;
+		}
+		$this->close();
+
+		return $return;
 	}
 	
 	
@@ -109,7 +114,7 @@ class DbManager implements DatabaseInterface{
 		if($statement->execute($values)){
 			$newRowId = $this->dbConnection->lastInsertId();
 		}
-		
+		$this->close();
 		return $newRowId;
 	}
 	
@@ -127,9 +132,11 @@ class DbManager implements DatabaseInterface{
 		if(!preg_match("/^[(SELECT)(select)].*$/", $sql)){
 			return $this->dbConnection->exec($sql);
 		}
-
 		$result = $this->dbConnection->query($sql);
-		return $result->fetchAll();
+		$result = $result->fetchAll();
+		$this->close();
+
+		return $result;
 	}
 
 	/**
@@ -160,6 +167,8 @@ class DbManager implements DatabaseInterface{
 			$sql = "ALTER TABLE $table ADD `$columnToAdd` $columnSpec";
 			$return = ($this->dbConnection->query($sql))?true:false;
 		}
+		$this->close();
+
 		return $return;
 	 }
 
@@ -178,6 +187,7 @@ class DbManager implements DatabaseInterface{
 			$sql = "ALTER TABLE $table DROP `$columnToRemove`";
 			$return = ($this->dbConnection->query($sql))?true:false;
 		}
+		$this->close();
 		return $return;
 	 }
 	/**
@@ -232,10 +242,12 @@ class DbManager implements DatabaseInterface{
             $stmt = $this->dbConnection->prepare($sql);
 			$this->currentStatement = $stmt;
 			$combinedValues = array_merge($values, $condition_values);
+			$return = false;
             if($stmt->execute($combinedValues)){
-                return true;
+                $return  = true;
             }
-			return false;
+			$this->close();
+			return $return;
 	}
 	/**
 	 *
@@ -252,10 +264,12 @@ class DbManager implements DatabaseInterface{
 		$this->setLastQuery($sql);
 		$stmt = $this->dbConnection->prepare($sql);
 		$this->currentStatement = $stmt;
+		$return = false;
 		if($stmt->execute($condition_values)){
-			return true;
+			$return = true;
 		}
-		return false;
+		$this->close();
+		return $return;
 	}
 
 	

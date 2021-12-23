@@ -17,7 +17,10 @@
                 $startLatitude,
                 $endLongitude,
                 $endLatitude,
-                $numOfRiders;
+                $numOfRiders,
+                $closed,
+                $isPrivate,  # this is immutable
+                $isAssignable;
 
         const GRP_TABLE = "ride_group",
               GRP_TABLE_ID = "`ride_group`.`id`",
@@ -123,6 +126,7 @@
             $this->setEndLatitude($groupInfo["e_lat"]);
             $this->setEndLongitude($groupInfo["e_long"]);
             $this->setNumOfRiders($groupInfo["num_riders"]);
+            $this->hasClosed($groupInfo["is_closed"], true);
             $this->setCreatedOn($groupInfo["created_on"]);
             $this->setUpdatedOn($groupInfo["updated_on"]);
 
@@ -157,13 +161,17 @@
             return $groupId;
         }
 
-        public static function makeAndGroupRide($groupId, $riderId){
+        /**
+         * 
+         * Make a new ride and assign the group id to it.
+         */
+        public static function makeAndGroupRide($groupId, $riderId, $firstInGroup = false){
             $group = new RideGroup($groupId);
             if($group->getNumberOfRides() >= Vehicle::getMaxCapacity()){
                 return false;
             }
 
-            $rideId = RideFactory::makeRide($riderId, $groupId);
+            $rideId = RideFactory::makeRide($riderId, $groupId, $firstInGroup);
             
             if($rideId == -1){
                 return false;
@@ -226,6 +234,15 @@
             return false;
         }
 
+        /**
+         * Resets the group start and end lat and long
+         * if the first person who created the group is 
+         * no longer a member of the group and the group is not yet 
+         * assigned to a driver.
+         */
+        public function resetGeoCoord($sLat, $sLong, $eLat, $eLong){
+
+        }
         /**
          * Get the value of id
          */ 
@@ -430,6 +447,77 @@
 
         public function getNumberOfRides(){
             return count($this->routeIds);
+        }
+
+        /**
+         * Get the value of closed
+         */ 
+        public function isClosed(DbManager $dbManager = null)
+        {
+            if($dbManager == null) $dbManager = new DbManager();
+            $groupInfo = $dbManager->query(RideGroup::GRP_TABLE, ["is_closed"], RideGroup::GRP_TABLE_ID . "= ?", [$this->id]);
+
+            if($groupInfo === false)  return true; //the group no longer exist
+
+            $this->closed = $groupInfo["is_closed"];
+            return $this->closed;
+        }
+
+        /**
+         * Set the value of closed
+         * @return  self
+         */ 
+        public function hasClosed($closed, $internal = false, DbManager $dbManager  = null)
+        {   
+            $updated = true;
+            if(!$internal){
+                if($dbManager == null) $dbManager = new DbManager();
+
+                $updated = $dbManager->update(RideGroup::GRP_TABLE, "is_closed = ?", [$closed], RideGroup::GRP_TABLE_ID . "= ?", [$this->id]);    
+            }
+
+            if($updated)$this->closed = $closed; 
+
+            return $this;
+        }
+
+        /**
+         * Get the value of isPrivate
+         */ 
+        public function getIsPrivate()
+        {
+            return $this->isPrivate;
+        }
+
+        /**
+         * Get the value of isAssignable
+         */ 
+        public function getIsAssignable(DbManager $dbManager = null)
+        {   
+            if($dbManager == null) $dbManager = new DbManager();
+            $groupInfo = $dbManager->query(RideGroup::GRP_TABLE, ["is_assignable"], RideGroup::GRP_TABLE_ID . "= ?", [$this->id]);
+
+            if($groupInfo === false)  return true; //the group no longer exist
+            $this->isAssignable = $groupInfo["is_assignable"];
+            
+            return $this->isAssignable;
+        }
+
+        /**
+         * Set the value of isAssignable
+         * In the database, set internal to true if this is not to be persisted
+         * @return  self
+         */ 
+        public function setIsAssignable(bool $isAssignable, bool $internal = false, DbManager $dbManager = null)
+        {   
+            $updated = true;
+            if(!$internal){
+                if($dbManager == null) $dbManager = new DbManager();
+                $updated = $dbManager->update(RideGroup::GRP_TABLE, "is_assignable = ?", [$isAssignable], RideGroup::GRP_TABLE_ID ." = ?", [$this->id]);
+            }
+
+            if($updated) $this->isAssignable = $isAssignable;
+            return $this;
         }
     }
 

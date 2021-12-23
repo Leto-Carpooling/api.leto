@@ -5,6 +5,7 @@
                 $groupId,
                 $riderId,
                 $routeId,
+                $firstInGroup,
                 $completed,
                 $completedOn,
                 $createdOn;
@@ -26,6 +27,7 @@
             $this->setGroupId($rideInfo["groupId"]);
             $this->setRouteId($rideInfo["routeId"]);
             $this->setCompleted($rideInfo["completed"] > 0);
+            $this->setFirstInGroup((bool)$rideInfo["first"]);
             $this->setCompletedOn($rideInfo["completed_on"]);
             $this->setCreatedOn($rideInfo["created_on"]);
             
@@ -173,6 +175,26 @@
         public function setCreatedOn($createdOn)
         {
                         $this->createdOn = $createdOn;
+
+                        return $this;
+        }
+
+        /**
+         * Get the value of firstInGroup
+         */ 
+        public function getFirstInGroup()
+        {
+                        return $this->firstInGroup;
+        }
+
+        /**
+         * Set the value of firstInGroup
+         *
+         * @return  self
+         */ 
+        public function setFirstInGroup($firstInGroup)
+        {
+                        $this->firstInGroup = $firstInGroup;
 
                         return $this;
         }

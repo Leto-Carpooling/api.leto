@@ -62,4 +62,10 @@ spl_autoload_register(function($name){
 
    $dbManager->close();
  }
+
+ # global env to only be fetch accessed once
+ # and used every where. Complexity is O(n); n is the number of lines in the env
+ # file
+ $env = Utility::getEnv();
+
 ?>
