@@ -1,9 +1,9 @@
 
-DROP database if exists leto_db;
+DROP database if exists [DATABASE_NAME];
 
-CREATE Database leto_db;
+CREATE Database [DATABASE_NAME];
 
-use leto_db;
+use [DATABASE_NAME];
 
 CREATE TABLE `user` (
   `id` bigint unsigned not null primary key auto_increment,

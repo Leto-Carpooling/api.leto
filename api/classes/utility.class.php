@@ -9,6 +9,8 @@
               LONG = "longitude",
               LAT_TO_METER = 111000,
               LONG_TO_METER = 111000;
+
+        public static $ENV_PATH = __DIR__. "/../../.env";
         /**
          * checks names to ensure that they meet policy
          */
@@ -48,27 +50,24 @@
            * Password Length Short Error: Password must length is shorter then 9 characters.
            */
 
-           public static function isPasswordStrong($password){
-            if(strlen($password) >= 9){
-                if(preg_match('@[A-Z]@', $password)){
-                   if(preg_match('@[a-z]@', $password)){
-                      if(preg_match('@[0-9]@', $password)){
-                        return true;
-                      }
-                      else{
-                        return Response::makeResponse("PNE", "Password must have at least one digit");//Password Number Error
-                      }
-                   }else{
-                     return Response::makeResponse("PLLE", "Password must have at least one lowercase letter");//Password Lowercase Letter Error
-                   }
-                }
-                else{
-                  return Response::makeResponse("PULE", "Password must have at least one uppercase letter");//Password Uppercase Letter Errors
-                }
+          public static function isPasswordStrong($password){
+            if(!strlen($password) >= 9){
+                return Response::makeResponse("PLSE", "Password must be longer than 9 characters");//Password Length Short Error
              }
-             else{
-               return Response::makeResponse("PLSE", "Password must be longer than 9 characters");//Password Length Short Error
-             }
+
+            if(!preg_match('@[A-Z]@', $password)){
+                return Response::makeResponse("PULE", "Password must have at least one uppercase letter");//Password Uppercase Letter Errors
+            }
+
+            if(!preg_match('@[a-z]@', $password)){
+                return Response::makeResponse("PLLE", "Password must have at least one lowercase letter");//Password Lowercase Letter Error
+            }
+
+            if(!preg_match('@[0-9]@', $password)){
+                return Response::makeResponse("PNE", "Password must have at least one digit");//Password Number Error
+            }
+              
+            return true;
            }
     
         
@@ -239,6 +238,36 @@
               }
             echo "\n---------------------------\n";
           }
-    }
 
+          /**
+           * Reads the .env file
+           */
+          public static function getEnv(){
+            $envContents = file_get_contents(Utility::$ENV_PATH);
+            $splitted = array_filter(preg_split("/[\n\r]/", $envContents));
+            $env = [];
+            foreach($splitted as $declaration){
+                $expr = preg_split("/=/", $declaration);
+                $vWithUndscr = strtolower(preg_replace("/\_/", " ", $expr[0]));
+                $variable = lcfirst(preg_replace("/\s/", "", ucwords($vWithUndscr)));
+                $env[$variable] = $expr[1];
+            }
+            
+           return json_decode(json_encode($env));
+          }
+        
+        /**
+         * Cleans a string input
+         */
+        public static function sanitizeString($string){
+            return filter_var($string, FILTER_SANITIZE_STRING);
+        }
+
+        /**
+         * sets updated to now
+         */
+        public static function setUpdatedOnToNow($table, $idColumn, $id){
+            return (new DbManager())->update($table, "updated_on = NOW", [], "$idColumn = ?", [$id]);
+        }
+    }
 ?>

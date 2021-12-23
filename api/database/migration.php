@@ -2,15 +2,8 @@
 /**
  * Migrates the database
  */
- require(__DIR__ . "/../../vendor/autoload.php");
-//  use Dotenv\Dotenv;
 
-// $dotenv = Dotenv::createImmutable(__DIR__);
-// $dotenv->load();
-
- require("../interfaces/database.interface.php");
- require("../classes/dbmanager.class.php");
-
+ require(__DIR__."/../master.inc.php");
 
 
  class Migrator{
@@ -18,6 +11,7 @@
 
      public static function migrate(){
         $query = file_get_contents(Migrator::SCHEMA);
+        $query = preg_replace("/\[DATABASE_NAME\]/", Utility::getEnv()->dbName, $query);
         $query = preg_replace("/\r\n/", " ", $query);
         $dbManager = new DbManager();
         if($dbManager->makeDatabase($query)){

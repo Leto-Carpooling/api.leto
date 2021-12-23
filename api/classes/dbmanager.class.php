@@ -13,40 +13,15 @@ class DbManager implements DatabaseInterface{
 	private $currentStatement;
 	private $lastQuery;
 
-	const USER_TABLE = "user",
-	      USER_ID = "`user`.`id`",
-
-		  SESSION_TABLE = "session",
-		  SESSION_ID = "`session`.`session_id`",
-
-		  TMP_EMAIL_TABLE = "temporary_email",
-		  TMP_EMAIL_ID = "`temporary_email`.`id`",
-
-		  TMP_PHONE_TABLE = "temporary_phone_number",
-		  TMP_PHONE_ID = "`temporary_phone_number`.`id`",	
-
-		  RESET_PASSWORD_TABLE = "reset_password",
-		  RESET_PASSWORD_ID = "`reset_password`.`id`",
-
-		  DRIVER_INFO_TABLE = "driver_information",
-		  DRIVER_INFO_ID = "`driver_information`.`driverId`",
-
-		  DRIVER_DOC_TABLE = "driver_document",
-		  DRIVER_DOC_ID = "`driver_document`.`driverId`",
-
-		  VEHICLE_TABLE = "vehicle",
-		  VEHICLE_ID = "`vehicle`.`vehicle_id`",
-
-		  VEHICLE_DOC_TABLE = "vehicle_document",
-		  VEHICLE_DOC_ID = "`vehicle_document`.`vehicleId`";
 
     /**
      * @param bool $options - to pass to the PDO connection
      */
     public function __construct($options = false){
-		$this->dbHost = "127.0.0.1"; //getenv('DB_HOST');
-        $this->dbPort = "3306"; //getenv('DB_PORT');
-        $this->dbName   = "leto_db"; //getenv('DB_DATABASE');
+		$env = Utility::getEnv();
+		$this->dbHost = $env->dbHost; 
+        $this->dbPort = $env->dbPort;
+        $this->dbName   = $env->dbName;
         $this->withOptions = $options;
 		//$this->currentStatement = null;
     }
@@ -57,8 +32,9 @@ class DbManager implements DatabaseInterface{
 	 * @return mixed
 	 */
 	public function connect() {
-			$user = "root";//getenv('DB_USERNAME');
-			$pass = "";//getenv('DB_PASSWORD');
+		    $env = Utility::getEnv();
+			$user = $env->dbUsername;
+			$pass = $env->dbPassword;
 			$dsn = "mysql:host=$this->dbHost;port=$this->dbPort;dbname=$this->dbName";
 			$options = [];
 
@@ -89,10 +65,10 @@ class DbManager implements DatabaseInterface{
 	 * @param array $columns 
 	 * @param string $condition_string 
 	 * @param array $condition_values  
-	 *
+	 * @param bool $add_ticks - 
 	 * @return array|bool
 	 */
-	public function query($table, $columns, $condition_string, $condition_values, $add_ticks = true) {
+	public function query($table, $columns, $condition_string, $condition_values, $add_ticks = true, $fetch_all = false) {
 		$this->connect();
 
 		if($add_ticks === true){
@@ -104,7 +80,7 @@ class DbManager implements DatabaseInterface{
 
             $stmt = $this->dbConnection->prepare($sql);
             if($stmt->execute($condition_values)){
-                $result = ($this->fetchAll)? $stmt->fetchAll() : $stmt->fetch();
+                $result = ($this->fetchAll || $fetch_all)? $stmt->fetchAll() : $stmt->fetch();
                 $return = $result;
             }
             else{
@@ -138,15 +114,27 @@ class DbManager implements DatabaseInterface{
 	}
 	
 	/**
-	 *
+	 * Makes a raw sql query and returns the result if necessary
+	 * If the query does not start with a select, then the number of rows
+	 * affected will be returned. Else, a result array will be return
 	 * @param mixed $sql 
 	 *
-	 * @return mixed
+	 * @return array
 	 */
 	public function rawSql($sql) {
-		
+		$this->connect();
+
+		if(!preg_match("/^[(SELECT)(select)].*$/", $sql)){
+			return $this->dbConnection->exec($sql);
+		}
+
+		$result = $this->dbConnection->query($sql);
+		return $result->fetchAll();
 	}
 
+	/**
+	 * Makes the database
+	 */
 	public function makeDatabase($sql){
 		$this->connect();
 
@@ -156,6 +144,42 @@ class DbManager implements DatabaseInterface{
 		return false;
 	}
 	
+	/**
+	 * Adds a column to the database if it doesn't exist
+	 * @param $columnToAdd - The name of the column to add
+	 * @param $columnSpec - the spec of the column. e.g, INT NOT NULL
+	 * @param $table - the table to which the column should be added.
+	 */
+	public function addColumn($columnToAdd, $columnSpec, $table){
+
+		$sql = "SHOW COLUMNS FROM $table LIKE '$columnToAdd'";
+		//column already exist
+		$this->connect();
+		$return = ($this->dbConnection->query($sql)->num_rows)?true:false;
+		if(!$return){
+			$sql = "ALTER TABLE $table ADD `$columnToAdd` $columnSpec";
+			$return = ($this->dbConnection->query($sql))?true:false;
+		}
+		return $return;
+	 }
+
+	/**
+	 * removes a column to the database if it exists
+	 * @param $columnToAdd - The name of the column to remove
+	 * @param $table - the table from which the column should be removed.
+	 */
+	public function removeColumn($columnToRemove, $table){
+
+		$sql = "SHOW COLUMNS FROM $table LIKE '$columnToRemove'";
+		//column already exist
+		$this->connect();
+		$return = ($this->dbConnection->query($sql)->num_rows)?true:false;
+		if($return){
+			$sql = "ALTER TABLE $table DROP `$columnToRemove`";
+			$return = ($this->dbConnection->query($sql))?true:false;
+		}
+		return $return;
+	 }
 	/**
 	 *
 	 * @return mixed
@@ -263,7 +287,7 @@ class DbManager implements DatabaseInterface{
     }
 
 	/**
-	 *
+	 * Get affected row count after an update, insert, or delete query.
 	 * @return mixed
 	 */
 	public function getAffRowsCount(){
