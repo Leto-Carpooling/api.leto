@@ -13,7 +13,7 @@
         ->create($phone_number, 
                 [
                     "body" => $msg, 
-                    "from" => T_NUMBER
+                    "messagingServiceSid" => T_MSERVICE_SID
                 ]
         );
         return true;
