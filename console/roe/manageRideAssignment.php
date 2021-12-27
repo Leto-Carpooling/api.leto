@@ -6,7 +6,7 @@
 
         $raManager->loadQueue();
         $raManager->disburseRAs();
-        sleep(1);
+        sleep(30);
 
     }
 
