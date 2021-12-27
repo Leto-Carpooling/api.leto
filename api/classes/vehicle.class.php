@@ -38,7 +38,7 @@ class Vehicle{
     public function loadVehicle($driver_id){
         $this->driverId = $driver_id;
         $dbManager = new DbManager();
-        $vInfo = $dbManager->query(DbManager::VEHICLE_TABLE, ["*"], "driverId = ?", [$this->driverId]);
+        $vInfo = $dbManager->query(Vehicle::VEHICLE_TABLE, ["*"], "driverId = ?", [$this->driverId]);
 
         if($vInfo === false){
             return false;
@@ -52,7 +52,7 @@ class Vehicle{
         $this->setColor($vInfo["vehicle_color"]);
         $this->setUpdatedOn($vInfo["updated_on"]);
 
-        $vDoc = $dbManager->query(DbManager::VEHICLE_DOC_TABLE, ["*"], "vehicleId = ?", [$this->id]);
+        $vDoc = $dbManager->query(Vehicle::VEHICLE_DOC_TABLE, ["*"], "vehicleId = ?", [$this->id]);
 
         if($vDoc === false){
             return false;
@@ -99,7 +99,7 @@ class Vehicle{
     private function addVehicle(){
 
         $dbManager = new DbManager();
-        $vehicleId = $dbManager->insert(DbManager::VEHICLE_TABLE, ["driverId", "manufacturer", "model", "capacity", "license_plate", "vehicle_color"], [$this->driverId, $this->manufacturer, $this->model, $this->capacity, $this->licenseNumber, $this->color]);
+        $vehicleId = $dbManager->insert(Vehicle::VEHICLE_TABLE, ["driverId", "manufacturer", "model", "capacity", "license_plate", "vehicle_color"], [$this->driverId, $this->manufacturer, $this->model, $this->capacity, $this->licenseNumber, $this->color]);
         
         if($vehicleId == -1){
             return false;
@@ -107,7 +107,7 @@ class Vehicle{
 
         $this->id = $vehicleId;
 
-        $vDocId = $dbManager->insert(DbManager::VEHICLE_DOC_TABLE, [DbManager::VEHICLE_DOC_ID], [$this->id]);
+        $vDocId = $dbManager->insert(Vehicle::VEHICLE_DOC_TABLE, [Vehicle::VEHICLE_DOC_ID], [$this->id]);
 
         if($vDocId == -1){
             return false;
@@ -123,7 +123,7 @@ class Vehicle{
     public function updateVehicle($updateSqlStr, array $values){
         $dbManager = new DbManager();
         return $dbManager
-                ->update(DbManager::VEHICLE_TABLE, $updateSqlStr, $values, DbManager::VEHICLE_ID . " = ?", [$this->id]);
+                ->update(Vehicle::VEHICLE_TABLE, $updateSqlStr, $values, Vehicle::VEHICLE_ID . " = ?", [$this->id]);
     }
 
     /**

@@ -391,13 +391,13 @@
             $randomPass = password_hash($randomPass, PASSWORD_DEFAULT);
 
             $dbManager = new DbManager();
-            return $dbManager->update(DbManager::USER_TABLE, "user_password = ?", [$randomPass], DbManager::USER_ID ."= ?", [$this->id]);
+            return $dbManager->update(User::USER_TABLE, "user_password = ?", [$randomPass], User::USER_ID ."= ?", [$this->id]);
         }
 
         public function changeAccountStatus($status){
             $this->accountStatus = $status;
             $dbManager = new DbManager();
-            return $dbManager->update(DbManager::USER_TABLE, "account_status = ?", [$this->accountStatus], DbManager::USER_ID ." = ?", [$this->id]);
+            return $dbManager->update(User::USER_TABLE, "account_status = ?", [$this->accountStatus], User::USER_ID ." = ?", [$this->id]);
         }
 
         /**

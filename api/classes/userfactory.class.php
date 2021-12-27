@@ -9,7 +9,7 @@
          */
         public static function createUser($user_id){
             $dbManager = new DbManager();
-            $userType = $dbManager->query(DbManager::USER_TABLE, ["user_type"], "id = ?", [$user_id]);
+            $userType = $dbManager->query(User::USER_TABLE, ["user_type"], "id = ?", [$user_id]);
 
             if($userType === false){
                 return false;
