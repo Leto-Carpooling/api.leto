@@ -4,6 +4,7 @@
         "phpmailer/phpmailer": "^6.5",
         "twilio/sdk": "^6.27",
         "yidas/google-maps-services": "^1.0",
-        "kreait/firebase-php": "^5.23"
+        "kreait/firebase-php": "^5.23",
+        "rmccue/requests": "^2.0"
     }
 }
