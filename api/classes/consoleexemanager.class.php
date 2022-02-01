@@ -9,8 +9,15 @@
      */
     class ConsoleExeManager{
 
-        const   MODE_SEQUENTIAL = 0,
-                MODE_PARALLEL = 1;
+        /**
+         * @property int MODE_SEQ_SAME_PRC - Sequential execution on the same process
+         * @property int MODE_SEQ_DIFF_PRC - Sequential execution on a different process
+         * @property int MODE_PAR_DIFF_PRCS - Parallel execution on different processes
+         */
+        const   MODE_SEQ_SAME_PRC = 0,
+                MODE_SEQ_DIFF_PRC = 1,
+                MODE_PAR_DIFF_PRCS = 2;
+
 
         private function __construct()
         {
@@ -19,9 +26,10 @@
 
         /**
          * This function executes a script from the console folder outside the api folder
-         * @param string $path -
-         * @param array $parameters - 
-         * @param int $mode -
+         * @param string $path - to the script as a reference from within ../console
+         * @param array $parameters - array of string parameters to pass to the script. When more than one parameter is passed, then the script will be executed multiple times for each 
+         * param.
+         * @param int $mode - One of the modes `ConsoleExeManager::MODE_SEQ_SAME_PRC|MODE_SEQ_DIFF_PRC|MODE_PAR_DIFF_PRCS`
          */
         public function execute(string $path, array $parameters, int $mode){
 
