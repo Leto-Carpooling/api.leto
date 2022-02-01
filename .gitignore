@@ -8,7 +8,6 @@ bin-release/
 .settings/
 vendor/
 .env
-composer.lock
 passwords.inc.php
 storage/*/*/*.jpeg
 storage/*/*.jpeg
