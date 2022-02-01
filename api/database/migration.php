@@ -7,7 +7,7 @@
 
 
  class Migrator{
-     const SCHEMA = "schema.sql";
+     const SCHEMA = __DIR__."/schema.sql";
 
      public static function migrate(){
         $query = file_get_contents(Migrator::SCHEMA);
