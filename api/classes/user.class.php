@@ -21,6 +21,9 @@
         const   USER_TABLE = "user",
                 USER_ID = "`user`.`id`";
 
+        const   ENABLED = "enabled",
+                DISABLED = "disabled";
+
         public function __construct($id = 0){
             if($id == 0){
                 return;

@@ -30,12 +30,12 @@ class Admin extends Driver{
 
     public function disableAccount($user_id){
         $user = new User($user_id);
-        return $user->changeAccountStatus("disabled");
+        return $user->changeAccountStatus(User::DISABLED);
     }
 
     public function enableAccount($user_id){
         $user = new User($user_id);
-        return $user->changeAccountStatus("enabled");
+        return $user->changeAccountStatus(User::ENABLED);
     }
 
     

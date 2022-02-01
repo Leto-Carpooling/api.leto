@@ -302,7 +302,7 @@ class DbManager implements DatabaseInterface{
 
 	/**
 	 * Get affected row count after an update, insert, or delete query.
-	 * @return mixed
+	 * @return int
 	 */
 	public function getAffRowsCount(){
 		return $this->currentStatement->rowCount();

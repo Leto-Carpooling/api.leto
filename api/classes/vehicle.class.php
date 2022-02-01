@@ -16,6 +16,7 @@ class Vehicle{
             $inspReportImage = "pending",
             $documentUpdatedOn;
 
+            //These paths will be accessed by the Utility class. Check the utility class to see how
     const   INSURANCE_PATH = "driver/vehicle/insurances",
             REGISTRATION_PATH = "driver/vehicle/registrations",
             IREPORT_PATH = "driver/vehicle/inspection_reports";
