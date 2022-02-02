@@ -34,6 +34,7 @@
      */
     const DRIVER_TABLE = "driver_information",
           DRIVER_ID = "`driver_information`.`driverId`",
+          FOREIGN_ID = "driverId",
           DRIVER_DOC_TABLE = "driver_document",
           DRIVER_DOC_ID = "`driver_document`.`driverId`",
           DRIVER_LOC_TABLE = "driver_location",
@@ -228,6 +229,22 @@
      */
     public function refresh(){
         $this->loadDriver($this->id);
+    }
+
+    /**
+     * Returns the total completed rides for this driver.
+     */
+    public function getTotalRides(){
+        $dbManager = new DbManager();
+        $totalRides = 0;
+
+        $result = $dbManager->query(RideGroup::GRP_TABLE, ["COUNT(".RideGroup::GRP_TABLE_ID.") as total_rides"], Driver::FOREIGN_ID. " = ? completed = 1", [$this->id]);
+
+        if($result){
+            $totalRides = $result["total_rides"];
+        }
+
+        return $totalRides;
     }
 
     /**
