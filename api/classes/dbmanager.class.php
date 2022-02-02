@@ -329,10 +329,6 @@ class DbManager implements DatabaseInterface{
 		return $return;
 	}
 
-	
-
-	
-
     /**
      * Get the value of dbConnection
 	 * @return \PDO
