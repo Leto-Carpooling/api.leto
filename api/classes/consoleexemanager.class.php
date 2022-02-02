@@ -10,13 +10,13 @@
     class ConsoleExeManager{
 
         /**
-         * @property int MODE_SEQ_SAME_PRC - Sequential execution on the same process
-         * @property int MODE_SEQ_DIFF_PRC - Sequential execution on a different process
-         * @property int MODE_PAR_DIFF_PRCS - Parallel execution on different processes
+         * @property int MODE_SOSP - Sequential execution on the Same Process
+         * @property int MODE_SODP - Sequential execution on a Different Process
+         * @property int MODE_PODP- Parallel execution on Different Processes
          */
-        const   MODE_SEQ_SAME_PRC = 0,
-                MODE_SEQ_DIFF_PRC = 1,
-                MODE_PAR_DIFF_PRCS = 2;
+        const   MODE_SOSP = 0,
+                MODE_SODP = 1,
+                MODE_PODP = 2;
 
 
         private function __construct()
