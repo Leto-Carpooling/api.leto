@@ -18,6 +18,8 @@
                 $endLongitude,
                 $endLatitude,
                 $numOfRiders,
+                $completed,
+                $dateCompleted,
                 $closed,
                 $isPrivate,  # this is immutable
                 $isAssignable;
@@ -82,14 +84,7 @@
 
             $this->setId($groupId);
             $this->populateRids($rideInfo);
-    
-            $this->setStartLatitude($groupInfo["s_lat"]);
-            $this->setStartLongitude($groupInfo["s_long"]);
-            $this->setEndLatitude($groupInfo["e_lat"]);
-            $this->setEndLongitude($groupInfo["e_long"]);
-            $this->setNumOfRiders($groupInfo["num_riders"]);
-            $this->setCreatedOn($groupInfo["created_on"]);
-            $this->setUpdatedOn($groupInfo["updated_on"]);
+            $this->setProperties($groupInfo);
             
             return true;
         }
@@ -120,16 +115,8 @@
 
             $this->setId($groupId);
             $this->populateRids($rideInfo);
-            
-            $this->setStartLatitude($groupInfo["s_lat"]);
-            $this->setStartLongitude($groupInfo["s_long"]);
-            $this->setEndLatitude($groupInfo["e_lat"]);
-            $this->setEndLongitude($groupInfo["e_long"]);
-            $this->setNumOfRiders($groupInfo["num_riders"]);
-            $this->hasClosed($groupInfo["is_closed"], true);
-            $this->setCreatedOn($groupInfo["created_on"]);
-            $this->setUpdatedOn($groupInfo["updated_on"]);
-
+            $this->setProperties($groupInfo);
+      
             return true;
         }
 
@@ -144,6 +131,19 @@
             foreach($arrayOfAssocArray as $rideInfo){
                 $this->routeIds[] = $rideInfo["routeId"];
             }
+        }
+
+        private function setProperties($groupInfo){
+            $this->setStartLatitude($groupInfo["s_lat"]);
+            $this->setStartLongitude($groupInfo["s_long"]);
+            $this->setEndLatitude($groupInfo["e_lat"]);
+            $this->setEndLongitude($groupInfo["e_long"]);
+            $this->setNumOfRiders($groupInfo["num_riders"]);
+            $this->setCompleted($groupInfo["completed"]);
+            $this->setDateCompleted($groupInfo["completed_on"]);
+            $this->hasClosed($groupInfo["is_closed"], true);
+            $this->setCreatedOn($groupInfo["created_on"]);
+            $this->setUpdatedOn($groupInfo["updated_on"]);
         }
 
         /**
@@ -518,6 +518,46 @@
 
             if($updated) $this->isAssignable = $isAssignable;
             return $this;
+        }
+
+        /**
+         * Get the value of completed
+         */ 
+        public function getCompleted()
+        {
+                        return $this->completed;
+        }
+
+        /**
+         * Set the value of completed
+         *
+         * @return  self
+         */ 
+        public function setCompleted($completed)
+        {
+                        $this->completed = $completed;
+
+                        return $this;
+        }
+
+        /**
+         * Get the value of dateCompleted
+         */ 
+        public function getDateCompleted()
+        {
+                        return $this->dateCompleted;
+        }
+
+        /**
+         * Set the value of dateCompleted
+         *
+         * @return  self
+         */ 
+        public function setDateCompleted($dateCompleted)
+        {
+                        $this->dateCompleted = $dateCompleted;
+
+                        return $this;
         }
     }
 

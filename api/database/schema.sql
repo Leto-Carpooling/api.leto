@@ -85,20 +85,20 @@ CREATE TABLE `driver_document` (
   `psv_license_image` varchar(255),
   `good_conduct_cert_image` varchar(255),
   `created_on` datetime default current_timestamp,
-  `updated_on` datetime default current_timestamp on update current_timestamp   ,
+  `updated_on` datetime default current_timestamp on update current_timestamp,
   FOREIGN KEY (`driverId`) REFERENCES `driver_information`(`driverId`) on delete cascade
 );
 
 CREATE TABLE `vehicle` (
   `vehicle_id` bigint unsigned not null primary key auto_increment,
   `driverId` bigint unsigned not null,
-  `manufacturer` varchar(255) not null ,
+  `manufacturer` varchar(255) not null,
   `model` varchar(255) not null,
   `capacity` int unsigned not null default 2,
   `license_plate` varchar(255) not null,
   `vehicle_color` varchar(100) not null,
   `created_on` datetime default current_timestamp,
-  `updated_on` datetime default current_timestamp on update current_timestamp   ,
+  `updated_on` datetime default current_timestamp on update current_timestamp,
   FOREIGN KEY (`driverId`) REFERENCES `driver_information`(`driverId`) on delete CASCADE
 );
 
@@ -129,6 +129,8 @@ CREATE TABLE `ride_group` (
   `is_assignable` tinyint not null default 0,
   `is_private` tinyint not null default 0,
   `num_riders` smallint not null default 0,
+  `completed` tinyint unsigned not null default 0,
+  `completed_on` datetime      ,
   `created_on` datetime default current_timestamp,
   `updated_on` datetime default current_timestamp on update current_timestamp    ,
   FOREIGN KEY (`driverId`) REFERENCES `driver_information`(`driverId`) on delete set null
@@ -141,8 +143,6 @@ CREATE TABLE `ride` (
   `routeId` bigint unsigned not null,
   `groupId` bigint unsigned not null,
   `first` tinyint unsigned not null default 0,
-  `completed` tinyint unsigned not null default 0,
-  `completed_on` datetime      ,
   `created_on` datetime default current_timestamp,
   `updated_on` datetime default current_timestamp on update current_timestamp     ,
   FOREIGN KEY (`groupId`) REFERENCES `ride_group`(`id`) ON DELETE CASCADE,

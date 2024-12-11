@@ -2,16 +2,47 @@
 
 require_once(__DIR__."/../interfaces/database.interface.php");
 
+
+/**
+ * Manages interactions with the database.
+ * This class abstracts the Relational Database being used from the clients
+ */
+
 class DbManager implements DatabaseInterface{
     private $dbConnection = null;
     private $dbName;
     private $dbHost;
-    private $rows;
-    private $statements = [];
+    private $rows; #saved rows
+	/**
+	 * @var array $statements
+	 * saved prepared statements
+	 */
+    private $statements = []; 
+	/**
+	 * @var array $withOptions
+	 * if there is any other options to create the PDO Connection object order than the default used.  
+	 * Default: [   
+					PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,  
+					PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC,  
+					PDO::ATTR_EMULATE_PREPARES => false  
+			];
+	 */
 	private $withOptions = false;
+	/**
+	 * @var bool $fetchAll
+	 * should all the rows be fetched from a query at once, or only the first one
+	 */
 	private $fetchAll = false;
+	/**
+	 * @var PDOStatement $currentStatement
+	 * The current PDO prepared statement being executed or previous executed.
+	 */
 	private $currentStatement;
-	private $lastQuery;
+	/**
+	 * @var string $lastQuery
+	 * The last query that was executed.
+	 */
+	private $lastQuery; 
 
 
     /**
@@ -42,7 +73,7 @@ class DbManager implements DatabaseInterface{
 
 			if(!$this->withOptions){
 				$options = [ 
-					PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC,
+					PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC,
 					PDO::ATTR_EMULATE_PREPARES => false
 			];
 			}
@@ -63,13 +94,14 @@ class DbManager implements DatabaseInterface{
 	}
 	
 	/**
-	 *
-	 * @param string $table 
-	 * @param array $columns 
-	 * @param string $condition_string 
-	 * @param array $condition_values  
-	 * @param bool $add_ticks - 
-	 * @return array|bool
+	 * Queries the underly database
+	 * @param string $table - table to query.
+	 * @param array $columns - The column names to fetch
+	 * @param string $condition_string - The condition string with place holders
+	 * @param array $condition_values  - The condition values
+	 * @param bool $add_ticks - Whether ticks should be added around the table names. Sometimes, when queries involving inner joins  
+	 * are made, the $table parameter usually has a query hence cannot be enclosed by ticks.
+	 * @return array|bool - returns array or associative arrays on success and bool on failure
 	 */
 	public function query($table, $columns, $condition_string, $condition_values, $add_ticks = true, $fetch_all = false) {
 		$this->connect();
@@ -96,44 +128,69 @@ class DbManager implements DatabaseInterface{
 	
 	
 	/**
-	 *
-	 * @param string $table 
-	 * @param array $columns 
-	 * @param array $values 
-	 *
-	 * @return int
+	 * Inserts into the underlying table
+	 * @param string $table - The table name
+	 * @param array $columns - The column names (order matters)
+	 * @param array $values - The array of values or (array of array of values) to insert into the columns.
+	 * @param bool $multipleRows - If you are inserting multiple rows at once, this will be true. And the $values will be array of arrays
+	 * @return int $lastRowId
 	 */
-	public function insert($table, $columns, $values) {
-		$sql = "INSERT INTO `$table`(". implode(", ",$columns). ") values (". $this->buildInsertPlaceholders(count($values)) .")";
+	public function insert($table, $columns, $values, $multipleRows = false) {
+
+		$sql = "INSERT INTO `$table`(". implode(", ",$columns). ") values ";
+
+		if(!$multipleRows){
+			$values = [$values];	
+		}
+		
+		$valueStr = "";
+		$exeValue = [];
+
+		foreach($values as $val){
+			if($valueStr !== ""){
+				$valueStr .= ", ";
+			}
+
+			$valueStr .= " (". $this->buildInsertPlaceholders(count($val)) .") ";
+			array_walk(function($value){
+				$exeValue[] = $value;
+			}, $val);
+		}
+
+		$sql .= $valueStr;
 		$this->setLastQuery($sql);
 
 		$this->connect();
-		$statement = $this->dbConnection->prepare($sql);
-		$newRowId = -1;
 
-		if($statement->execute($values)){
-			$newRowId = $this->dbConnection->lastInsertId();
+		$statement = $this->dbConnection->prepare($sql);
+
+		$lastRowId = -1;
+
+		if($statement->execute($exeValue)){
+			$lastRowId = $this->dbConnection->lastInsertId();
 		}
 		$this->close();
-		return $newRowId;
+
+		return $lastRowId;
 	}
 	
 	/**
-	 * Makes a raw sql query and returns the result if necessary
+	 * Executes a raw sql query and returns the result if necessary
 	 * If the query does not start with a select, then the number of rows
 	 * affected will be returned. Else, a result array will be return
-	 * @param mixed $sql 
-	 *
+	 * @param string $sql - The SQL string to execute with place holder
+	 * @param array  $values - For the placeholders
 	 * @return array
 	 */
-	public function rawSql($sql) {
+	public function rawSql($sql, $values = []) {
 		$this->connect();
 
-		if(!preg_match("/^[(SELECT)(select)].*$/", $sql)){
-			return $this->dbConnection->exec($sql);
+		$statement = $this->dbConnection->prepare($sql);
+		if(!$statement->execute($values)){
+			return false;
 		}
-		$result = $this->dbConnection->query($sql);
-		$result = $result->fetchAll();
+
+		$result = $statement->fetchAll();
 		$this->close();
 
 		return $result;
@@ -272,10 +329,6 @@ class DbManager implements DatabaseInterface{
 		return $return;
 	}
 
-	
-
-	
-
     /**
      * Get the value of dbConnection
 	 * @return \PDO
@@ -302,7 +355,7 @@ class DbManager implements DatabaseInterface{
 
 	/**
 	 * Get affected row count after an update, insert, or delete query.
-	 * @return mixed
+	 * @return int
 	 */
 	public function getAffRowsCount(){
 		return $this->currentStatement->rowCount();

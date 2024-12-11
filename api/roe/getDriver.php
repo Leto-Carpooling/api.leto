@@ -16,21 +16,29 @@
             Response::UEO()
         );
     }
+
+    $vehicle = $driver->getVehicle();
+
     exit(
         Response::makeResponse(
             "OK",
             json_encode(
                 [
                     "name" => $driver->getFirstName(). " ". $driver->getLastName(),
+                    "firstName" => $driver->getFirstName(),
+                    "lastName" => $driver->getLastName(),
+                    "phoneNumber" => $driver->getPhone(),
+                    "status" => $driver->getApprovalStatus(),
+                    "email" => $driver->getEmail(),
                     "profileImage" => User::PROFILE_IMG_PATH."/".$driver->getProfileImage(),
                     "vehicle" => [
-                        "model" => $driver->getVehicle()->getModel(),
-                        "manufacturer" => $driver->getVehicle()->getManufacturer(),
-                        "licensePlate" => $driver->getVehicle()->getLicenseNumber(),
-                        "capacity" => $driver->getVehicle()->getCapacity(),
-                        "color" => $driver->getVehicle()->getColor()
+                        "model" => $vehicle->getModel(),
+                        "manufacturer" => $vehicle->getManufacturer(),
+                        "licensePlate" => $vehicle->getLicenseNumber(),
+                        "capacity" => $vehicle->getCapacity(),
+                        "color" => $vehicle->getColor()
                     ],
-                    "totalRides" => "not shown"
+                    "totalRides" => $driver->getTotalRides()
                 ]
             )
         )

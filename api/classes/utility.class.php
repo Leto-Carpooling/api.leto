@@ -213,6 +213,11 @@
             );
           }
 
+          /**
+           * Converts Latitude or Longitudes to Meter.
+           * @param float $input - The actual longitude or Latitude values
+           * @param string $type - One of Utility::LAT and Utility::LONG
+           */
           public static function LatLngToMeter($input, $type){
               switch($type){
                   case Utility::LAT:
@@ -226,6 +231,9 @@
               }
           }
 
+          /**
+           * Prints out a matrix in formatted order
+           */
           public static function printMatrix($matrix){
             
             echo "\n---------------------------\n";
@@ -240,7 +248,7 @@
           }
 
           /**
-           * Reads the .env file
+           * Reads the .env file and returns an object.
            */
           public static function getEnv(){
             $envContents = file_get_contents(Utility::$ENV_PATH);
@@ -264,7 +272,11 @@
         }
 
         /**
-         * sets updated to now
+         * sets updated to now for a particular table
+         * @param string $table - The table to operate on
+         * @param string $idColumn - The name of the primary key
+         * @param int $id - The primary key value
+         * @return bool
          */
         public static function setUpdatedOnToNow($table, $idColumn, $id){
             return (new DbManager())->update($table, "updated_on = NOW", [], "$idColumn = ?", [$id]);

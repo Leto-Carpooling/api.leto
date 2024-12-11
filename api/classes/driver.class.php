@@ -34,6 +34,7 @@
      */
     const DRIVER_TABLE = "driver_information",
           DRIVER_ID = "`driver_information`.`driverId`",
+          FOREIGN_ID = "driverId",
           DRIVER_DOC_TABLE = "driver_document",
           DRIVER_DOC_ID = "`driver_document`.`driverId`",
           DRIVER_LOC_TABLE = "driver_location",
@@ -55,7 +56,7 @@
         }
 
         $dbManager = new DbManager();
-        $driverInfo = $dbManager->query(DbManager::DRIVER_INFO_TABLE, ["*"], DbManager::DRIVER_INFO_ID." = ?", [$id]);
+        $driverInfo = $dbManager->query(Driver::DRIVER_TABLE, ["*"], Driver::DRIVER_ID." = ?", [$id]);
 
         if($driverInfo === false){
             return false;
@@ -68,7 +69,7 @@
         $this->setApprovalStatus($driverInfo["approval_status"]);
         $this->setUpdated($driverInfo["updated_on"]);
 
-        $driverDoc = $dbManager->query(DbManager::DRIVER_DOC_TABLE, ["*"], DbManager::DRIVER_DOC_ID . " = ?", [$id]);
+        $driverDoc = $dbManager->query(Driver::DRIVER_DOC_TABLE, ["*"], Driver::DRIVER_DOC_ID . " = ?", [$id]);
 
         if($driverDoc === false){
             return false;
@@ -141,7 +142,7 @@
             return false;
         }
 
-        if(!$dbManager->update(DbManager::USER_TABLE, "user_type = ?", ["driver"], DbManager::USER_ID ." = ?", [$this->id])){
+        if(!$dbManager->update(User::USER_TABLE, "user_type = ?", ["driver"], User::USER_ID ." = ?", [$this->id])){
             return false;
         }
 
@@ -152,10 +153,10 @@
         $dbManager = new DbManager();
         return 
             $dbManager->update(
-            DbManager::DRIVER_INFO_TABLE, 
+            Driver::DRIVER_TABLE, 
             "national_id = ?, regular_license = ?", 
             [$this->nationalId, $this->regLicense],
-            DbManager::DRIVER_INFO_ID ." = ?",
+            Driver::DRIVER_ID ." = ?",
             [$this->id]);
     }
 
@@ -209,7 +210,7 @@
         }
         $this->approvalStatus = $status;
         $dbManager = new DbManager();
-        return $dbManager->update(DbManager::DRIVER_INFO_TABLE, "approval_status = ? ", [$status], DbManager::DRIVER_INFO_ID . "= ?", [$this->id]);
+        return $dbManager->update(Driver::DRIVER_TABLE, "approval_status = ? ", [$status], Driver::DRIVER_ID . "= ?", [$this->id]);
     }
 
     /**
@@ -228,6 +229,22 @@
      */
     public function refresh(){
         $this->loadDriver($this->id);
+    }
+
+    /**
+     * Returns the total completed rides for this driver.
+     */
+    public function getTotalRides(){
+        $dbManager = new DbManager();
+        $totalRides = 0;
+
+        $result = $dbManager->query(RideGroup::GRP_TABLE, ["COUNT(".RideGroup::GRP_TABLE_ID.") as total_rides"], Driver::FOREIGN_ID. " = ? completed = 1", [$this->id]);
+
+        if($result){
+            $totalRides = $result["total_rides"];
+        }
+
+        return $totalRides;
     }
 
     /**
