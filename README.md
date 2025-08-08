@@ -17,3 +17,5 @@ This repo holds the APIs that powers the front end of Leto Car pooling E-hailing
 2. **yidas/google-maps-services**: For google maps api services from PHP.
 3. **kreait/firebase-php**: For firebase interaction from the server
 4. **rmccue/requests**: For wrapping http requests. Staying away from raw cUrl
+
+> **This was my first IS project in the 3rd year of University (Strathmore University) when I pursued a BSc in Informatics and Computer Science. Notice I am using vanilla PHP**
